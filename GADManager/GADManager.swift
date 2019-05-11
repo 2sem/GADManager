@@ -169,11 +169,11 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     }
     
     //GADInterstitialDelegate
-    /*func interstitialDidReceiveAd(_ ad: GADInterstitial) {
+    public func interstitialDidReceiveAd(_ ad: GADInterstitial) {
      print("Interstitial is ready. name[\(self.name(forAdObject: ad) ?? "")]");
      
      //self._show();
-     }*/
+    }
     
     public func interstitialWillPresentScreen(_ ad: GADInterstitial) {
         //self.fullAd = nil;
@@ -192,8 +192,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         self.reprepare(adObject: ad); //reload
     }
     
-    /*func interstitial(_ ad: GADInterstitial, didFailToReceiveAdWithError error: GADRequestError) {
+    public func interstitial(_ ad: GADInterstitial, didFailToReceiveAdWithError error: GADRequestError) {
      print("Interstitial occured error. name[\(self.name(forAdObject: ad) ?? "")] error[\(error)]");
-     }*/
+    }
 }
 
