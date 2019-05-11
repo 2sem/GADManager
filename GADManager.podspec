@@ -86,7 +86,7 @@ s.platform     = :ios, "9.0"
 #  Supports git, hg, bzr, svn and HTTP.
 #
 
-s.source       = { :git => "https://github.com/2sem/GADManager", :tag => "#{s.version}" }
+s.source       = { :git => "https://github.com/2sem/GADManager.git", :tag => "#{s.version}" }
 
 # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
 #
