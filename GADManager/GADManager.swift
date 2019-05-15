@@ -17,7 +17,7 @@ public protocol GADManagerDelegate : NSObjectProtocol{
 }
 
 extension GADManagerDelegate{
-    func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E){}
+    public func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E){}
 }
 
 public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegate where E.RawValue == String, E: Hashable{
