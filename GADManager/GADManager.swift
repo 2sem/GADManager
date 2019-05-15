@@ -13,6 +13,11 @@ public protocol GADManagerDelegate : NSObjectProtocol{
     //associatedtype E : RawRepresentable where E.RawValue == String
     func GAD<E>(manager: GADManager<E>, lastShownTimeForUnit unit: E) -> Date;
     func GAD<E>(manager: GADManager<E>, updatShownTimeForUnit unit: E, showTime time: Date);
+    func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E);
+}
+
+extension GADManagerDelegate{
+    func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E){}
 }
 
 public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegate where E.RawValue == String, E: Hashable{
@@ -44,6 +49,14 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     
     func name(forAdObject adObject: NSObject) -> String?{
         return self.adObjects.first(where: { $0.value === adObject })?.key.rawValue;
+    }
+    
+    func unit(forAdObject adObject: NSObject) -> E?{
+        guard let name = self.name(forAdObject: adObject), let unit = E.init(rawValue: name) else{
+            return nil;
+        }
+        
+        return unit;
     }
     
     public func reset(unit: E){
@@ -178,6 +191,11 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     public func interstitialWillPresentScreen(_ ad: GADInterstitial) {
         //self.fullAd = nil;
         print("Interstitial has been presented. name[\(self.name(forAdObject: ad) ?? "")]");
+        guard let unit = self.unit(forAdObject: ad) else{
+            return;
+        }
+        
+        self.delegate?.GAD(manager: self, willPresentADForUnit: unit);
     }
     
     /*func interstitialDidFail(toPresentScreen ad: GADInterstitial) {
