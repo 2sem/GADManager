@@ -18,6 +18,9 @@
 		2C2207B02286A17700DE2544 /* GADManager.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = GADManager.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		2C2207B22286A1C600DE2544 /* GADManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GADManager.swift; sourceTree = "<group>"; };
 		2C2207B42286AF1F00DE2544 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		5D530E89604D91B49315DD3E /* Pods_GADManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GADManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.debug.xcconfig"; path = "../../../../../gersanghelper/src/gersanghelper/Pods/Target Support Files/Pods-GADManager/Pods-GADManager.debug.xcconfig"; sourceTree = "<group>"; };
+		CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.release.xcconfig"; path = "../../../../../gersanghelper/src/gersanghelper/Pods/Target Support Files/Pods-GADManager/Pods-GADManager.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,6 +41,8 @@
 				2C2207B42286AF1F00DE2544 /* LICENSE */,
 				2C2207A12286A0C700DE2544 /* GADManager */,
 				2C2207A02286A0C700DE2544 /* Products */,
+				51AC61B496BFC1FF11D513A6 /* Pods */,
+				AD612DA64E58D93F79C2EA41 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,6 +63,23 @@
 			path = GADManager;
 			sourceTree = "<group>";
 		};
+		51AC61B496BFC1FF11D513A6 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */,
+				CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		AD612DA64E58D93F79C2EA41 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5D530E89604D91B49315DD3E /* Pods_GADManager.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -75,6 +97,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2C2207A72286A0C700DE2544 /* Build configuration list for PBXNativeTarget "GADManager" */;
 			buildPhases = (
+				A07E1EEF3C1F933A585B5990 /* [CP] Check Pods Manifest.lock */,
 				2C22079A2286A0C700DE2544 /* Headers */,
 				2C22079B2286A0C700DE2544 /* Sources */,
 				2C22079C2286A0C700DE2544 /* Frameworks */,
@@ -132,6 +155,31 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A07E1EEF3C1F933A585B5990 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-GADManager-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2C22079B2286A0C700DE2544 /* Sources */ = {
@@ -269,6 +317,7 @@
 		};
 		2C2207A82286A0C700DE2544 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -290,6 +339,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -298,6 +348,7 @@
 		};
 		2C2207A92286A0C700DE2544 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -319,6 +370,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
