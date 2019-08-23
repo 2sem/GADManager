@@ -117,6 +117,34 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         }
     }
     
+    public func prepare(bannerUnit unit: E, size: GADAdSize = kGADAdSizeBanner) -> GADBannerView?{
+        var value : GADBannerView?;
+        //self.intervals[unit] = interval;
+        //guard let _ = self.adObjects[unit] else{
+            if let unitId = self.identifiers?[unit.rawValue]{
+                value = GADBannerView.init(adSize: size);
+                value?.adUnitID = unitId;
+                //ad.delegate = self;
+                //let req = GADRequest();
+                #if DEBUG
+                //req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
+                #endif
+                /*if let alert = UIApplication.shared.keyWindow?.rootViewController?.presentedViewController as? UIAlertController{
+                 alert.dismiss(animated: false, completion: nil);
+                 }
+                 }*/
+                
+                //ad.load(req);
+                //self.adObjects[unit] = ad;
+            }else{
+                assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
+            }
+            //return;
+        //}
+        
+        return value;
+    }
+    
     func reprepare(adObject: NSObject){
         
         guard let name = self.name(forAdObject: adObject), let unit = E.init(rawValue: name), let interval = self.intervals[unit] else{
