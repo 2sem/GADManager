@@ -14,10 +14,12 @@ public protocol GADManagerDelegate : NSObjectProtocol{
     func GAD<E>(manager: GADManager<E>, lastShownTimeForUnit unit: E) -> Date;
     func GAD<E>(manager: GADManager<E>, updatShownTimeForUnit unit: E, showTime time: Date);
     func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E);
+    func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E);
 }
 
 extension GADManagerDelegate{
     public func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E){}
+    public func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E){}
 }
 
 public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegate where E.RawValue == String, E: Hashable{
@@ -27,6 +29,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     lazy var identifiers = Bundle.main.infoDictionary?["GADUnitIdentifiers"] as? [String : String];
     var adObjects : [E : NSObject] = [:];
     var intervals : [E : TimeInterval] = [:];
+    var completions : [E : (E, NSObject) -> Void] = [:];
     public var canShowFirstTime = true;
     public weak var delegate : GADManagerDelegate?;
     
@@ -167,7 +170,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         return value;
     }
     
-    public func show(unit: E, force : Bool = false){
+    public func show(unit: E, force : Bool = false, completion: ((E, NSObject) -> Void)? = nil){
         guard self.canShow(unit) || force else {
             //self.window.rootViewController?.showAlert(title: "알림", msg: "1시간에 한번만 후원하실 수 있습니다 ^^;", actions: [UIAlertAction(title: "확인", style: .default, handler: nil)], style: .alert);
             return;
@@ -177,10 +180,10 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
             return;
         }
         
-        self.__show(unit: unit);
+        self.__show(unit: unit, completion: completion);
     }
     
-    private func __show(unit: E){
+    private func __show(unit: E, completion: ((E, NSObject) -> Void)? = nil){
         guard self.window.rootViewController != nil else{
             return;
         }
@@ -202,6 +205,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         
         if let ad = self.adObjects[unit] as? GADInterstitial{
             print("present ad view[\(self.window.rootViewController?.description ?? "")]");
+            self.completions[unit] = completion;
             ad.present(fromRootViewController: self.window.rootViewController!);
             self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: Date());
         }
@@ -235,7 +239,15 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         /*self.window.rootViewController?.showAlert(title: "후원해주셔서 감사합니다.", msg: "불편하신 사항은 리뷰에 남겨주시면 반영하겠습니다.", actions: [UIAlertAction.init(title: "확인", style: .default, handler: nil), UIAlertAction.init(title: "평가하기", style: .default, handler: { (act) in
          UIApplication.shared.openReview();
          })], style: .alert);*/
-        self.reprepare(adObject: ad); //reload
+        defer{
+            self.reprepare(adObject: ad); //reload
+        }
+        guard let unit = self.unit(forAdObject: ad) else{
+            return;
+        }
+        
+        self.delegate?.GAD(manager: self, didDismissADForUnit: unit);
+        self.completions[unit]?(unit, ad);
     }
     
     public func interstitial(_ ad: GADInterstitial, didFailToReceiveAdWithError error: GADRequestError) {
