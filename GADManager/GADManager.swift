@@ -72,17 +72,17 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         var value = true;
         let now = Date();
         
-        guard self.delegate != nil else {
+        guard let delegate = self.delegate else {
             return value;
         }
         
-        let lastShowTime = self.delegate!.GAD(manager: self, lastShownTimeForUnit: unit);
+        let lastShowTime = delegate.GAD(manager: self, lastShownTimeForUnit: unit);
         let time_1970 = Date.init(timeIntervalSince1970: 0);
         
         //(!self.canShowFirstTime &&
         guard self.canShowFirstTime || lastShowTime > time_1970 else{
             if lastShowTime <= time_1970{
-                self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: now);
+                delegate.GAD(manager: self, updatShownTimeForUnit: unit, showTime: now);
             }
             value = false;
             return value;
