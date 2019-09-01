@@ -170,21 +170,24 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         return value;
     }
     
-    public func show(unit: E, force : Bool = false, completion: ((E, NSObject) -> Void)? = nil){
+    public func show(unit: E, force : Bool = false, completion: ((E, NSObject?) -> Void)? = nil){
         guard self.canShow(unit) || force else {
             //self.window.rootViewController?.showAlert(title: "알림", msg: "1시간에 한번만 후원하실 수 있습니다 ^^;", actions: [UIAlertAction(title: "확인", style: .default, handler: nil)], style: .alert);
+            completion?(unit, self.adObjects[unit]);
             return;
         }
         
         guard self.isPrepared(unit) else{
+            completion?(unit, self.adObjects[unit]);
             return;
         }
         
         self.__show(unit: unit, completion: completion);
     }
     
-    private func __show(unit: E, completion: ((E, NSObject) -> Void)? = nil){
+    private func __show(unit: E, completion: ((E, NSObject?) -> Void)? = nil){
         guard self.window.rootViewController != nil else{
+            completion?(unit, self.adObjects[unit]);
             return;
         }
         
@@ -200,6 +203,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         guard !(UIApplication.shared.keyWindow?.rootViewController?.presentedViewController is UIAlertController) else{
             //alert.dismiss(animated: false, completion: nil);
             //self.fullAd = nil;
+            completion?(unit, self.adObjects[unit]);
             return;
         }
         
