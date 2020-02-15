@@ -98,10 +98,10 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     
     public func prepare(interstitialUnit unit: E, interval: TimeInterval = GADManager.defaultInterval){
         self.intervals[unit] = interval;
-        guard let _ = self.adObjects[unit] else{
+        guard let ad = self.adObjects[unit] else{
             if let unitId = self.identifiers?[unit.rawValue]{
-                let ad = GADInterstitial(adUnitID: unitId);
-                ad.delegate = self;
+                let newAd = GADInterstitial(adUnitID: unitId);
+                newAd.delegate = self;
                 let req = GADRequest();
                 #if DEBUG
                 req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
@@ -111,12 +111,16 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
                  }
                  }*/
                 
-                ad.load(req);
-                self.adObjects[unit] = ad;
+                newAd.load(req);
+                self.adObjects[unit] = newAd;
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
             }
             return;
+        }
+        
+        if let fullAd = ad as? GADInterstitial, !fullAd.isReady{
+            fullAd.load(GADRequest());
         }
     }
     
@@ -146,6 +150,14 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         //}
         
         return value;
+    }
+    
+    func reprepare(interstitialUnit unit: E){
+        if let interval = self.intervals[unit]{
+            self.prepare(interstitialUnit: unit, interval: interval);
+        }else{
+            self.prepare(interstitialUnit: unit);
+        }
     }
     
     func reprepare(adObject: NSObject){
@@ -178,6 +190,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         }
         
         guard self.isPrepared(unit) else{
+            self.reprepare(interstitialUnit: unit);
             completion?(unit, self.adObjects[unit]);
             return;
         }
