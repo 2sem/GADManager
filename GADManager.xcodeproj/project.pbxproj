@@ -10,6 +10,10 @@
 		2C2207B12286A17700DE2544 /* GADManager.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 2C2207B02286A17700DE2544 /* GADManager.podspec */; };
 		2C2207B32286A1C600DE2544 /* GADManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2207B22286A1C600DE2544 /* GADManager.swift */; };
 		2C2207B52286AF1F00DE2544 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 2C2207B42286AF1F00DE2544 /* LICENSE */; };
+		2CAE69FF2537ED2100355B7F /* UIViewController+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAE69FE2537ED2100355B7F /* UIViewController+.swift */; };
+		2CAE6A022537F88E00355B7F /* UIAlertAction+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAE6A012537F88E00355B7F /* UIAlertAction+.swift */; };
+		2CAE6A4B2538241C00355B7F /* String+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAE6A4A2538241C00355B7F /* String+.swift */; };
+		2CAE6A71253824A100355B7F /* UIApplication+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAE6A70253824A100355B7F /* UIApplication+.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +22,10 @@
 		2C2207B02286A17700DE2544 /* GADManager.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = GADManager.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		2C2207B22286A1C600DE2544 /* GADManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GADManager.swift; sourceTree = "<group>"; };
 		2C2207B42286AF1F00DE2544 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		2CAE69FE2537ED2100355B7F /* UIViewController+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+.swift"; sourceTree = "<group>"; };
+		2CAE6A012537F88E00355B7F /* UIAlertAction+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertAction+.swift"; sourceTree = "<group>"; };
+		2CAE6A4A2538241C00355B7F /* String+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+.swift"; sourceTree = "<group>"; };
+		2CAE6A70253824A100355B7F /* UIApplication+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+.swift"; sourceTree = "<group>"; };
 		5D530E89604D91B49315DD3E /* Pods_GADManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GADManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.debug.xcconfig"; path = "../../../../../gersanghelper/src/gersanghelper/Pods/Target Support Files/Pods-GADManager/Pods-GADManager.debug.xcconfig"; sourceTree = "<group>"; };
 		CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.release.xcconfig"; path = "../../../../../gersanghelper/src/gersanghelper/Pods/Target Support Files/Pods-GADManager/Pods-GADManager.release.xcconfig"; sourceTree = "<group>"; };
@@ -57,10 +65,22 @@
 		2C2207A12286A0C700DE2544 /* GADManager */ = {
 			isa = PBXGroup;
 			children = (
+				2CAE69FD2537ED0A00355B7F /* extensions */,
 				2C2207B22286A1C600DE2544 /* GADManager.swift */,
 				2C2207A32286A0C700DE2544 /* Info.plist */,
 			);
 			path = GADManager;
+			sourceTree = "<group>";
+		};
+		2CAE69FD2537ED0A00355B7F /* extensions */ = {
+			isa = PBXGroup;
+			children = (
+				2CAE69FE2537ED2100355B7F /* UIViewController+.swift */,
+				2CAE6A70253824A100355B7F /* UIApplication+.swift */,
+				2CAE6A012537F88E00355B7F /* UIAlertAction+.swift */,
+				2CAE6A4A2538241C00355B7F /* String+.swift */,
+			);
+			path = extensions;
 			sourceTree = "<group>";
 		};
 		51AC61B496BFC1FF11D513A6 /* Pods */ = {
@@ -186,6 +206,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2CAE6A71253824A100355B7F /* UIApplication+.swift in Sources */,
+				2CAE6A022537F88E00355B7F /* UIAlertAction+.swift in Sources */,
+				2CAE69FF2537ED2100355B7F /* UIViewController+.swift in Sources */,
+				2CAE6A4B2538241C00355B7F /* String+.swift in Sources */,
 				2C2207B32286A1C600DE2544 /* GADManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

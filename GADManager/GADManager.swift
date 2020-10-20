@@ -8,6 +8,8 @@
 
 import UIKit
 import GoogleMobileAds
+import AdSupport
+import AppTrackingTransparency
 
 public protocol GADManagerDelegate : NSObjectProtocol{
     //associatedtype E : RawRepresentable where E.RawValue == String
@@ -60,6 +62,36 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         }
         
         return unit;
+    }
+    
+    @available(iOS 14, *)
+    public func requestPermission(viewControllerForAlert viewController: UIViewController? = nil, title: String? = nil, msg: String? = nil, cancel: String? = nil, settings: String? = nil, completion: ((ATTrackingManager.AuthorizationStatus) -> Void)? = nil) {
+        ATTrackingManager.requestTrackingAuthorization { status in
+            switch status {
+                case .authorized: // Tracking authorization dialog was shown // and we are authorized
+                    print("Authorized") // Now that we are authorized we can get the IDFA
+                    //print(ASIdentifierManager.shared().advertisingIdentifier);
+                    break;
+                case .denied: // Tracking authorization dialog was
+                    // shown and permission is denied
+                    print("Denied")
+                    viewController?.openSettingsOrCancel(title: title ?? "", msg: msg ?? "You have to agree accessing to IDFA for using this app continue", style: .alert, titleForOK: cancel ?? "Cancel", titleForSettings: settings ?? "Settings");
+                    break;
+                case .notDetermined: // Tracking authorization dialog has not been shown
+                    print("Not Determined")
+                    break;
+                case .restricted:
+                    print("Restricted")
+                    //show alert
+                    //showAlert(title: String, msg: String, actions : [UIAlertAction], style: UIAlertControllerStyle, sourceView: UIView? = nil, sourceRect: CGRect? = nil, popoverDelegate: UIPopoverPresentationControllerDelegate? = nil, completion: (() -> Void)? = nil)
+                    return;
+                @unknown default:
+                    print("Unknown")
+                    break;
+            }
+            
+            completion?(status);
+        }
     }
     
     public func reset(unit: E){

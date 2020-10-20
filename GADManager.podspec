@@ -96,7 +96,7 @@ s.source       = { :git => "https://github.com/2sem/GADManager.git", :tag => "#{
 #  Not including the public_header_files will make all headers public.
 #
 
-s.source_files  = "GADManager/*.swift"#, "**/*.{h,m}"
+s.source_files  = "**/*.swift"#, "**/*.{h,m}"
 #s.exclude_files = "Classes/Exclude"
 
 # s.public_header_files = "Classes/**/*.h"
