@@ -31,7 +31,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     lazy var identifiers = Bundle.main.infoDictionary?["GADUnitIdentifiers"] as? [String : String];
     var adObjects : [E : NSObject] = [:];
     var intervals : [E : TimeInterval] = [:];
-    var completions : [E : (E, NSObject) -> Void] = [:];
+    var isLoading : [E : Bool] = [:];
+    var completions : [E : (E, NSObject?) -> Void] = [:];
     public var canShowFirstTime = true;
     public weak var delegate : GADManagerDelegate?;
     
@@ -142,7 +143,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
                  alert.dismiss(animated: false, completion: nil);
                  }
                  }*/
-                
+                self.isLoading[unit] = true;
                 newAd.load(req);
                 self.adObjects[unit] = newAd;
             }else{
@@ -152,6 +153,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         }
         
         if let fullAd = ad as? GADInterstitial, !fullAd.isReady{
+            self.isLoading[unit] = true;
             fullAd.load(GADRequest());
         }
     }
@@ -214,7 +216,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         return value;
     }
     
-    public func show(unit: E, force : Bool = false, viewController: UIViewController? = nil, completion: ((E, NSObject?) -> Void)? = nil){
+    public func show(unit: E, force : Bool = false, needToWait wait: Bool = false, viewController: UIViewController? = nil, completion: ((E, NSObject?) -> Void)? = nil){
         guard self.canShow(unit) || force else {
             //self.window.rootViewController?.showAlert(title: "알림", msg: "1시간에 한번만 후원하실 수 있습니다 ^^;", actions: [UIAlertAction(title: "확인", style: .default, handler: nil)], style: .alert);
             completion?(unit, self.adObjects[unit]);
@@ -222,8 +224,13 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         }
         
         guard self.isPrepared(unit) else{
+            if wait{
+                self.completions[unit] = completion;
+            }
             self.reprepare(interstitialUnit: unit);
-            completion?(unit, self.adObjects[unit]);
+            if !wait{
+                completion?(unit, self.adObjects[unit]);
+            }
             return;
         }
         
@@ -264,9 +271,19 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     
     //GADInterstitialDelegate
     public func interstitialDidReceiveAd(_ ad: GADInterstitial) {
-     print("Interstitial is ready. name[\(self.name(forAdObject: ad) ?? "")]");
-     
-     //self._show();
+        print("Interstitial is ready. name[\(self.name(forAdObject: ad) ?? "")]");
+        guard let unit = self.unit(forAdObject: ad) else{
+            return;
+        }
+        
+        self.isLoading[unit] = true;
+        guard let completion = self.completions[unit] else{
+            return;
+        }
+        
+        self.completions[unit] = nil;
+//        completion?(unit, ad);
+        self.__show(unit: unit, completion: completion);
     }
     
     public func interstitialWillPresentScreen(_ ad: GADInterstitial) {
@@ -291,16 +308,38 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         defer{
             self.reprepare(adObject: ad); //reload
         }
+        
         guard let unit = self.unit(forAdObject: ad) else{
             return;
         }
         
         self.delegate?.GAD(manager: self, didDismissADForUnit: unit);
-        self.completions[unit]?(unit, ad);
+        let completion = self.completions[unit];
+        self.completions[unit] = nil;
+        completion?(unit, ad);
     }
     
     public func interstitial(_ ad: GADInterstitial, didFailToReceiveAdWithError error: GADRequestError) {
-     print("Interstitial occured error. name[\(self.name(forAdObject: ad) ?? "")] error[\(error)]");
+        print("Interstitial occured error. name[\(self.name(forAdObject: ad) ?? "")] error[\(error)]");
+        
+        guard let code = GADErrorCode.init(rawValue: error.code) else {
+            return;
+        }
+        
+        guard let unit = self.unit(forAdObject: ad) else {
+            return;
+        }
+        
+        switch code {
+        case .internalError:
+            let completion = self.completions[unit];
+            self.completions[unit] = nil;
+            completion?(unit, ad);
+            break;
+        default:
+            break;
+        }
+     
     }
 }
 

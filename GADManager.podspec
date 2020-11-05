@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 #
 #
 s.name         = "GADManager"
-s.version      = "1.0.6"
+s.version      = "1.0.7"
 s.swift_version = "4.1"
 s.summary      = "Google AD Manager Library"
 
