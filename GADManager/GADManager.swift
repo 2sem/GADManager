@@ -374,6 +374,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     public func interstitialWillPresentScreen(_ ad: GADInterstitial) {
         //self.fullAd = nil;
         print("Interstitial has been presented. name[\(self.name(forAdObject: ad) ?? "")]");
+        UIApplication.shared.setStatusBarHidden(true, with: .none);
         guard let unit = self.unit(forAdObject: ad) else{
             return;
         }
@@ -391,6 +392,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
          UIApplication.shared.openReview();
          })], style: .alert);*/
         defer{
+            UIApplication.shared.setStatusBarHidden(self.window.rootViewController?.prefersStatusBarHidden ?? false, with: .none);
             self.reprepare(adObject: ad); //reload
         }
         
