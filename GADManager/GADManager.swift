@@ -31,9 +31,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     
     public static var defaultInterval : TimeInterval { return 60.0 * 60.0 * 1.0 }
     #if DEBUG
-    public static var opeingExpireInterval : TimeInterval { return 60.0 * 60.0 * 4.0 }
-    #else
     public static var opeingExpireInterval : TimeInterval { return 60.0 * 5.0 }
+    #else
+    public static var opeingExpireInterval : TimeInterval { return 60.0 * 60.0 * 4.0 }
     #endif
 
     lazy var identifiers = Bundle.main.infoDictionary?["GADUnitIdentifiers"] as? [String : String];
