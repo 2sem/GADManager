@@ -14,6 +14,7 @@
 		2CAE6A022537F88E00355B7F /* UIAlertAction+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAE6A012537F88E00355B7F /* UIAlertAction+.swift */; };
 		2CAE6A4B2538241C00355B7F /* String+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAE6A4A2538241C00355B7F /* String+.swift */; };
 		2CAE6A71253824A100355B7F /* UIApplication+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAE6A70253824A100355B7F /* UIApplication+.swift */; };
+		CBC70749020CBBFA2C9E9235 /* Pods_GADManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D530E89604D91B49315DD3E /* Pods_GADManager.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,8 +28,8 @@
 		2CAE6A4A2538241C00355B7F /* String+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+.swift"; sourceTree = "<group>"; };
 		2CAE6A70253824A100355B7F /* UIApplication+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+.swift"; sourceTree = "<group>"; };
 		5D530E89604D91B49315DD3E /* Pods_GADManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GADManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.debug.xcconfig"; path = "../../../../../gersanghelper/src/gersanghelper/Pods/Target Support Files/Pods-GADManager/Pods-GADManager.debug.xcconfig"; sourceTree = "<group>"; };
-		CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.release.xcconfig"; path = "../../../../../gersanghelper/src/gersanghelper/Pods/Target Support Files/Pods-GADManager/Pods-GADManager.release.xcconfig"; sourceTree = "<group>"; };
+		97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.debug.xcconfig"; path = "Target Support Files/Pods-GADManager/Pods-GADManager.debug.xcconfig"; sourceTree = "<group>"; };
+		CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.release.xcconfig"; path = "Target Support Files/Pods-GADManager/Pods-GADManager.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBC70749020CBBFA2C9E9235 /* Pods_GADManager.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,11 +363,12 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.15;
+				MARKETING_VERSION = 1.2.17;
 				PRODUCT_BUNDLE_IDENTIFIER = com.y2k.GADManager;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
@@ -395,11 +398,12 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.15;
+				MARKETING_VERSION = 1.2.17;
 				PRODUCT_BUNDLE_IDENTIFIER = com.y2k.GADManager;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

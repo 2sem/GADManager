@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 #
 #
 s.name         = "GADManager"
-s.version      = "1.2.16"
+s.version      = "1.2.17"
 s.swift_version = "4.1"
 s.summary      = "Google AD Manager Library"
 
@@ -143,7 +143,8 @@ s.static_framework = true
 
 s.dependency "Firebase/AdMob"
 s.dependency "Firebase/Analytics"
-s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
+s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64',
+                            'ONLY_ACTIVE_ARCH' => 'YES' }
 s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
 #pod 'Firebase/Messaging'
 #pod 'Firebase/AdMob'
