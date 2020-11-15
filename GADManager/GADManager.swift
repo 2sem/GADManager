@@ -35,11 +35,13 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     #else
     public static var opeingExpireInterval : TimeInterval { return 60.0 * 60.0 * 4.0 }
     #endif
-
+    public static var loadingExpirationInterval : TimeInterval { return 60.0 * 1.0 }
+    
     lazy var identifiers = Bundle.main.infoDictionary?["GADUnitIdentifiers"] as? [String : String];
     var adObjects : [E : NSObject] = [:];
     var intervals : [E : TimeInterval] = [:];
     var isLoading : [E : Bool] = [:];
+    var lastBeginLoading : [E : Date] = [:];
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
     public var canShowFirstTime = true;
     public weak var delegate : GADManagerDelegate?;
@@ -203,7 +205,11 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
 //                #if DEBUG
 //                req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
 //                #endif
+                #if DEBUG
                 let unitId = isTest ? "ca-app-pub-3940256099942544/5662855259" : _unitId;
+                #else
+                let unitId = _unitId;
+                #endif
                 
                 self.isLoading[unit] = true;
                 GADAppOpenAd.load(withAdUnitID: unitId, request: req, orientation: orientation) { [weak self](newAd, error) in
@@ -240,6 +246,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     }
     
     func reprepare(interstitialUnit unit: E){
+        self.adObjects[unit] = nil;
+        
         if let interval = self.intervals[unit]{
             self.prepare(interstitialUnit: unit, interval: interval);
         }else{
@@ -248,6 +256,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     }
     
     func reprepare(openingUnit unit: E, isTest: Bool = false){
+        self.adObjects[unit] = nil;
+        
         if let interval = self.intervals[unit]{
             self.prepare(openingUnit: unit, interval: interval);
         }else{
@@ -278,8 +288,12 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
 //            let time_1970 = Date.init(timeIntervalSince1970: 0);
             let now = Date();
             let lastPrepared = delegate?.GAD(manager: self, lastPreparedTimeForUnit: unit) ?? now;
+            print("[\(#function)] opening ad was prepared[\(lastPrepared)] now[\(now)]");
             
             value = now.timeIntervalSince(lastPrepared) <= type(of: self).opeingExpireInterval;
+            if !value{
+                print("[\(#function)] opening ad is expired");
+            }
         }
         
         return value;
@@ -301,11 +315,15 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
             let ad = self.adObjects[unit];
             
             if !(self.isLoading[unit] ?? false){
+                print("[\(#function)] ad is not loading");
+                
                 if ad is GADInterstitial{
                     self.reprepare(interstitialUnit: unit);
                 }else if ad is GADAppOpenAd{
                     self.reprepare(openingUnit: unit, isTest: isTest);
                 }
+            }else{
+                print("[\(#function)] ad is loading");
             }
             
             if !wait{
