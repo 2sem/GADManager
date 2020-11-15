@@ -5,6 +5,7 @@
 //  Created by 영준 이 on 2020/10/15.
 //  Copyright © 2020 Y2KLab. All rights reserved.
 //
+import Foundation
 
 extension String {
     /**
