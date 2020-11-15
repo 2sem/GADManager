@@ -83,9 +83,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
                 case .denied: // Tracking authorization dialog was
                     // shown and permission is denied
                     print("[\(#function)] Denied")
-                    DispatchQueue.main.async {
-                        viewController?.openSettingsOrCancel(title: title ?? "", msg: msg ?? "You have to agree accessing to IDFA for using this app continue", style: .alert, titleForOK: cancel ?? "Cancel", titleForSettings: settings ?? "Settings");
-                    }
+//                    DispatchQueue.main.async {
+//                        viewController?.openSettingsOrCancel(title: title ?? "", msg: msg ?? "You have to agree accessing to IDFA for using this app continue", style: .alert, titleForOK: cancel ?? "Cancel", titleForSettings: settings ?? "Settings");
+//                    }
                     break;
                 case .notDetermined: // Tracking authorization dialog has not been shown
                     print("[\(#function)] Not Determined")
