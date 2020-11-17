@@ -42,6 +42,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     var intervals : [E : TimeInterval] = [:];
     var isLoading : [E : Bool] = [:];
     var lastBeginLoading : [E : Date] = [:];
+    var hideTestLabels : [E: Bool] = [:];
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
     public var canShowFirstTime = true;
     public weak var delegate : GADManagerDelegate?;
@@ -140,13 +141,18 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         return value;
     }
     
-    public func prepare(interstitialUnit unit: E, interval: TimeInterval = GADManager.defaultInterval){
+    public func prepare(interstitialUnit unit: E, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
         self.intervals[unit] = interval;
+        if let hideTestLabel = hideTestLabel{
+            self.hideTestLabels[unit] = hideTestLabel;
+        }
+        
         guard let ad = self.adObjects[unit] else{
             if let unitId = self.identifiers?[unit.rawValue]{
                 let newAd = GADInterstitial(adUnitID: unitId);
                 newAd.delegate = self;
                 let req = GADRequest();
+                if hideTestLabel ?? false { req.hideTestLabel() }
                 #if DEBUG
                 req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
                 #endif
@@ -165,7 +171,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         
         if let fullAd = ad as? GADInterstitial, !fullAd.isReady{
             self.isLoading[unit] = true;
-            fullAd.load(GADRequest());
+            let req = GADRequest();
+            if hideTestLabel ?? false { req.hideTestLabel() }
+            fullAd.load(req);
         }
     }
     
@@ -177,7 +185,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
                 value = GADBannerView.init(adSize: size);
                 value?.adUnitID = unitId;
                 //ad.delegate = self;
-                //let req = GADRequest();
+//                let req = GADRequest();
+//                if hideTestLabel ?? false { req.hideTestLabel() }
                 #if DEBUG
                 //req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
                 #endif
@@ -186,7 +195,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
                  }
                  }*/
                 
-                //ad.load(req);
+//                value.load(req);
                 //self.adObjects[unit] = ad;
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
@@ -197,11 +206,13 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         return value;
     }
     
-    public func prepare(openingUnit unit: E, isTest: Bool = false, orientation: UIInterfaceOrientation = .unknown, interval: TimeInterval = GADManager.defaultInterval){
+    public func prepare(openingUnit unit: E, isTest: Bool = false, orientation: UIInterfaceOrientation = .unknown, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
         self.intervals[unit] = interval;
+        self.hideTestLabels[unit] = hideTestLabel;
         guard let ad = self.adObjects[unit] else{
             if let _unitId = self.identifiers?[unit.rawValue]{
                 let req = GADRequest();
+                if hideTestLabel ?? false { req.hideTestLabel() }
 //                #if DEBUG
 //                req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
 //                #endif
@@ -249,9 +260,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         self.adObjects[unit] = nil;
         
         if let interval = self.intervals[unit]{
-            self.prepare(interstitialUnit: unit, interval: interval);
+            self.prepare(interstitialUnit: unit, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
         }else{
-            self.prepare(interstitialUnit: unit);
+            self.prepare(interstitialUnit: unit, hideTestLabel: self.hideTestLabels[unit]);
         }
     }
     
@@ -259,9 +270,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         self.adObjects[unit] = nil;
         
         if let interval = self.intervals[unit]{
-            self.prepare(openingUnit: unit, interval: interval);
+            self.prepare(openingUnit: unit, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
         }else{
-            self.prepare(openingUnit: unit);
+            self.prepare(openingUnit: unit, hideTestLabel: self.hideTestLabels[unit]);
         }
     }
     
@@ -272,10 +283,10 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         
         if adObject is GADInterstitial{
             self.adObjects[unit] = nil;
-            self.prepare(interstitialUnit: unit, interval: interval);
+            self.prepare(interstitialUnit: unit, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
         }else if adObject is GADAppOpenAd{
             self.adObjects[unit] = nil;
-            self.prepare(openingUnit: unit, isTest: isTest, interval: interval);
+            self.prepare(openingUnit: unit, isTest: isTest, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
         }
     }
     
