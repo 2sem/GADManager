@@ -9,7 +9,7 @@
 import UIKit
 import GoogleMobileAds
 import AdSupport
-import AppTrackingTransparency
+//import AppTrackingTransparency
 
 public protocol GADManagerDelegate : NSObjectProtocol{
     //associatedtype E : RawRepresentable where E.RawValue == String
@@ -74,7 +74,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         
         return unit;
     }
-    
+    #if false
     @available(iOS 14, *)
     public func requestPermission(viewControllerForAlert viewController: UIViewController? = nil, title: String? = nil, msg: String? = nil, cancel: String? = nil, settings: String? = nil, completion: ((ATTrackingManager.AuthorizationStatus) -> Void)? = nil) {
         ATTrackingManager.requestTrackingAuthorization { status in
@@ -106,6 +106,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
             completion?(status);
         }
     }
+    #endif
     
     public func reset(unit: E){
         //RSDefaults.LastFullADShown = Date();
