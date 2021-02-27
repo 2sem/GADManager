@@ -22,6 +22,10 @@ public protocol GADManagerDelegate : NSObjectProtocol{
 }
 
 extension GADManagerDelegate{
+    func GAD<E>(manager: GADManager<E>, lastPreparedTimeForUnit unit: E) -> Date{
+        return Date();
+    }
+    func GAD<E>(manager: GADManager<E>, updateLastPreparedTimeForUnit unit: E, preparedTime time: Date){}
     public func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E){}
     public func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E){}
 }
