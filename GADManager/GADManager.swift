@@ -21,7 +21,7 @@ public protocol GADManagerDelegate : NSObjectProtocol{
     func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E);
 }
 
-extension GADManagerDelegate{
+public extension GADManagerDelegate{
     func GAD<E>(manager: GADManager<E>, lastPreparedTimeForUnit unit: E) -> Date{
         return Date();
     }
@@ -141,7 +141,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         let spent = now.timeIntervalSince(lastShowTime);
         let interval = self.intervals[unit] ?? GADManager.defaultInterval;
         value = spent > interval;
-        print("ad time spent \(spent) since \(lastShowTime). name[\(name)] now[\(now)] interval[\(interval)]");
+        debugPrint("ad time spent \(spent.description) since \(lastShowTime.description). name[\(unit.rawValue)] now[\(now.description)] interval[\(interval.description)]");
         
         return value;
     }
@@ -214,7 +214,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     public func prepare(openingUnit unit: E, isTest: Bool = false, orientation: UIInterfaceOrientation = .unknown, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
         self.intervals[unit] = interval;
         self.hideTestLabels[unit] = hideTestLabel;
-        guard let ad = self.adObjects[unit] else{
+        guard let _ = self.adObjects[unit] else{
             if let _unitId = self.identifiers?[unit.rawValue]{
                 let req = GADRequest();
                 if hideTestLabel ?? false { req.hideTestLabel() }
@@ -300,7 +300,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         
         if let interstitial = self.adObjects[unit] as? GADInterstitial{
             value = interstitial.isReady;
-        }else if let opening = self.adObjects[unit] as? GADAppOpenAd{
+        }else if let _ = self.adObjects[unit] as? GADAppOpenAd{ //opening
 //            let time_1970 = Date.init(timeIntervalSince1970: 0);
             let now = Date();
             let lastPrepared = delegate?.GAD(manager: self, lastPreparedTimeForUnit: unit) ?? now;
@@ -407,13 +407,14 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     
     public func interstitialWillPresentScreen(_ ad: GADInterstitial) {
         //self.fullAd = nil;
-        print("Interstitial has been presented. name[\(self.name(forAdObject: ad) ?? "")]");
-        UIApplication.shared.setStatusBarHidden(true, with: .none);
+        debugPrint("Interstitial has been presented. name[\(self.name(forAdObject: ad) ?? "")]");
+        //UIApplication.shared.setStatusBarHidden(true, with: .none);
         guard let unit = self.unit(forAdObject: ad) else{
             return;
         }
         
         self.delegate?.GAD(manager: self, willPresentADForUnit: unit);
+        self.window.rootViewController?.setNeedsStatusBarAppearanceUpdate();
     }
     
     /*func interstitialDidFail(toPresentScreen ad: GADInterstitial) {
@@ -426,7 +427,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
          UIApplication.shared.openReview();
          })], style: .alert);*/
         defer{
-            UIApplication.shared.setStatusBarHidden(self.window.rootViewController?.prefersStatusBarHidden ?? false, with: .none);
+//            UIApplication.shared.setStatusBarHidden(self.window.rootViewController?.prefersStatusBarHidden ?? false, with: .none);
             self.reprepare(adObject: ad); //reload
         }
         
@@ -436,6 +437,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         
         self.isLoading[unit] = false;
         self.delegate?.GAD(manager: self, didDismissADForUnit: unit);
+        self.window.rootViewController?.setNeedsStatusBarAppearanceUpdate();
+
         let completion = self.completions[unit];
         self.completions[unit] = nil;
         completion?(unit, ad, true);
@@ -444,7 +447,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     public func interstitial(_ ad: GADInterstitial, didFailToReceiveAdWithError error: GADRequestError) {
         print("Interstitial occured error. name[\(self.name(forAdObject: ad) ?? "")] error[\(error)]");
         
-        guard let code = GADErrorCode.init(rawValue: error.code) else {
+        guard let _ = GADErrorCode.init(rawValue: error.code) else {
             return;
         }
         
@@ -477,15 +480,17 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     }
     
     public func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
-        print("Opening has been dismissed. name[\(self.name(forAdObject: ad as! NSObject) ?? "")]");
+        let adObj = ad as! NSObject;
+        print("Opening has been dismissed. name[\(self.name(forAdObject: adObj) ?? "")]");
         /*self.window.rootViewController?.showAlert(title: "후원해주셔서 감사합니다.", msg: "불편하신 사항은 리뷰에 남겨주시면 반영하겠습니다.", actions: [UIAlertAction.init(title: "확인", style: .default, handler: nil), UIAlertAction.init(title: "평가하기", style: .default, handler: { (act) in
          UIApplication.shared.openReview();
          })], style: .alert);*/
+        
         defer{
-            self.reprepare(adObject: ad as! NSObject); //reload
+            self.reprepare(adObject: adObj); //reload
         }
         
-        guard let unit = self.unit(forAdObject: ad as! NSObject) else{
+        guard let unit = self.unit(forAdObject: adObj) else{
             return;
         }
         
@@ -493,18 +498,20 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         self.delegate?.GAD(manager: self, didDismissADForUnit: unit);
         let completion = self.completions[unit];
         self.completions[unit] = nil;
-        completion?(unit, ad as! NSObject, true);
+        completion?(unit, adObj, true);
     }
     
     public func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
-        print("Opening occured error. name[\(self.name(forAdObject: ad as! NSObject) ?? "")] error[\(error)]");
+        let adObj = ad as! NSObject;
+        
+        print("Opening occured error. name[\(self.name(forAdObject: adObj) ?? "")] error[\(error)]");
         let error = error as NSError;
         
-        guard let code = GADErrorCode.init(rawValue: error.code) else {
+        guard let _ = GADErrorCode.init(rawValue: error.code) else {
             return;
         }
         
-        guard let unit = self.unit(forAdObject: ad as! NSObject) else {
+        guard let unit = self.unit(forAdObject: adObj) else {
             return;
         }
         
@@ -514,7 +521,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
 //        case .internalError:
             let completion = self.completions[unit];
             self.completions[unit] = nil;
-        completion?(unit, ad as! NSObject, false);
+        completion?(unit, adObj, false);
 //            break;
 //        default:
 //            break;

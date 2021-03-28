@@ -137,15 +137,16 @@ s.source_files  = "**/*.swift"#, "**/*.{h,m}"
 
 # s.requires_arc = true
 
-s.xcconfig = { 'VALID_ARCHS' => 'arm64 x86_64 i386' }
+#s.xcconfig = { 'VALID_ARCHS' => 'arm64 x86_64 i386' }
 # s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
 # s.dependency 'Firebase/Core'
 s.static_framework = true
 
 s.dependency "Firebase/AdMob"
 s.dependency "Firebase/Analytics"
-s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64', 'VALID_ARCHS' => 'arm64 x86_64 i386' }
-s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64', 'VALID_ARCHS' => 'arm64 x86_64 i386' }
+s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' } #, 'VALID_ARCHS' => 'arm64 x86_64 i386'
+s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' } #, 'VALID_ARCHS' => 'arm64 x86_64 i386'
+#s.dependency.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
 
 #                            'ONLY_ACTIVE_ARCH' => 'YES'
 #pod 'Firebase/Messaging'
