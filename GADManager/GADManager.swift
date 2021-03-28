@@ -26,8 +26,8 @@ public extension GADManagerDelegate{
         return Date();
     }
     func GAD<E>(manager: GADManager<E>, updateLastPreparedTimeForUnit unit: E, preparedTime time: Date){}
-    public func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E){}
-    public func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E){}
+    func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E){}
+    func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E){}
 }
 
 public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegate, GADFullScreenContentDelegate where E.RawValue == String, E: Hashable{
