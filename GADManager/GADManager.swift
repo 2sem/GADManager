@@ -9,7 +9,7 @@
 import UIKit
 import GoogleMobileAds
 import AdSupport
-//import AppTrackingTransparency
+import AppTrackingTransparency
 
 public protocol GADManagerDelegate : NSObjectProtocol{
     //associatedtype E : RawRepresentable where E.RawValue == String
@@ -30,7 +30,7 @@ public extension GADManagerDelegate{
     func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E){}
 }
 
-public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegate, GADFullScreenContentDelegate where E.RawValue == String, E: Hashable{
+public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDelegate where E.RawValue == String, E: Hashable{
     var window : UIWindow;
     
     public static var defaultInterval : TimeInterval { return 60.0 * 60.0 * 1.0 }
@@ -78,7 +78,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         
         return unit;
     }
-    #if false
+    
+    #if true
     @available(iOS 14, *)
     public func requestPermission(viewControllerForAlert viewController: UIViewController? = nil, title: String? = nil, msg: String? = nil, cancel: String? = nil, settings: String? = nil, completion: ((ATTrackingManager.AuthorizationStatus) -> Void)? = nil) {
         ATTrackingManager.requestTrackingAuthorization { status in
@@ -152,33 +153,43 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
             self.hideTestLabels[unit] = hideTestLabel;
         }
         
-        guard let ad = self.adObjects[unit] else{
+        func loadAd(unit: E){
             if let unitId = self.identifiers?[unit.rawValue]{
-                let newAd = GADInterstitial(adUnitID: unitId);
-                newAd.delegate = self;
                 let req = GADRequest();
                 if hideTestLabel ?? false { req.hideTestLabel() }
-                #if DEBUG
-                req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
-                #endif
-                /*if let alert = UIApplication.shared.keyWindow?.rootViewController?.presentedViewController as? UIAlertController{
-                 alert.dismiss(animated: false, completion: nil);
-                 }
-                 }*/
                 self.isLoading[unit] = true;
-                newAd.load(req);
-                self.adObjects[unit] = newAd;
+                GADInterstitialAd.load(withAdUnitID: unitId, request: req) { [weak self](newAd, error) in
+                    self?.isLoading[unit] = false;
+                    if let error = error{
+    //                        guard let _ = GADErrorCode.init(rawValue: error.code) else {
+    //                            return;
+    //                        }
+                        
+                        let completion = self?.completions[unit];
+                        self?.completions[unit] = nil;
+                        completion?(unit, newAd, false);
+                        return;
+                    }
+                    
+                    newAd?.fullScreenContentDelegate = self;
+                    self?.adObjects[unit] = newAd;
+                }
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
             }
+        }
+        
+        guard let ad = self.adObjects[unit] else{
+            loadAd(unit: unit);
             return;
         }
         
-        if let fullAd = ad as? GADInterstitial, !fullAd.isReady{
-            self.isLoading[unit] = true;
-            let req = GADRequest();
-            if hideTestLabel ?? false { req.hideTestLabel() }
-            fullAd.load(req);
+        if let fullAd = ad as? GADInterstitialAd{
+            do{
+                try fullAd.canPresent(fromRootViewController: self.window.rootViewController!)
+            }catch{
+                loadAd(unit: unit);
+            }
         }
     }
     
@@ -286,7 +297,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
             return;
         }
         
-        if adObject is GADInterstitial{
+        if adObject is GADInterstitialAd{
             self.adObjects[unit] = nil;
             self.prepare(interstitialUnit: unit, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
         }else if adObject is GADAppOpenAd{
@@ -298,8 +309,14 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
     func isPrepared(_ unit: E) -> Bool{
         var value = false;
         
-        if let interstitial = self.adObjects[unit] as? GADInterstitial{
-            value = interstitial.isReady;
+        if let interstitial = self.adObjects[unit] as? GADInterstitialAd{
+            do{
+                if let viewController = self.window.rootViewController{
+    //                value = interstitial.isReady;
+                    try interstitial.canPresent(fromRootViewController: viewController);
+                    value = true;
+                }
+            }catch{}
         }else if let _ = self.adObjects[unit] as? GADAppOpenAd{ //opening
 //            let time_1970 = Date.init(timeIntervalSince1970: 0);
             let now = Date();
@@ -333,7 +350,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
             if !(self.isLoading[unit] ?? false){
                 print("[\(#function)] ad is not loading");
                 
-                if ad is GADInterstitial{
+                if ad is GADInterstitialAd{
                     self.reprepare(interstitialUnit: unit);
                 }else if ad is GADAppOpenAd{
                     self.reprepare(openingUnit: unit, isTest: isTest);
@@ -373,7 +390,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
             return;
         }
         
-        if let ad = self.adObjects[unit] as? GADInterstitial{
+        if let ad = self.adObjects[unit] as? GADInterstitialAd{
             print("present interstital ad view[\(self.window.rootViewController?.description ?? "")]");
             self.completions[unit] = completion;
             ad.present(fromRootViewController: viewController ?? self.window.rootViewController!);
@@ -388,86 +405,85 @@ public class GADManager<E : RawRepresentable> : NSObject, GADInterstitialDelegat
         //RSDefaults.LastFullADShown = Date();
     }
     
-    // MARK: GADInterstitialDelegate
-    public func interstitialDidReceiveAd(_ ad: GADInterstitial) {
-        print("Interstitial is ready. name[\(self.name(forAdObject: ad) ?? "")]");
-        guard let unit = self.unit(forAdObject: ad) else{
-            return;
-        }
-        
-        self.isLoading[unit] = false;
-        guard let completion = self.completions[unit] else{
-            return;
-        }
-        
-//        self.completions[unit] = nil;
-//        completion?(unit, ad);
-        self.show(unit: unit, completion: completion);
-    }
+//    public func interstitialDidReceiveAd(_ ad: GADInterstitial) {
+//        print("Interstitial is ready. name[\(self.name(forAdObject: ad) ?? "")]");
+//        guard let unit = self.unit(forAdObject: ad) else{
+//            return;
+//        }
+//
+//        self.isLoading[unit] = false;
+//        guard let completion = self.completions[unit] else{
+//            return;
+//        }
+//
+////        self.completions[unit] = nil;
+////        completion?(unit, ad);
+//        self.show(unit: unit, completion: completion);
+//    }
     
-    public func interstitialWillPresentScreen(_ ad: GADInterstitial) {
-        //self.fullAd = nil;
-        debugPrint("Interstitial has been presented. name[\(self.name(forAdObject: ad) ?? "")]");
-        //UIApplication.shared.setStatusBarHidden(true, with: .none);
-        guard let unit = self.unit(forAdObject: ad) else{
-            return;
-        }
-        
-        self.delegate?.GAD(manager: self, willPresentADForUnit: unit);
-        self.window.rootViewController?.setNeedsStatusBarAppearanceUpdate();
-    }
+//    public func interstitialWillPresentScreen(_ ad: GADInterstitial) {
+//        //self.fullAd = nil;
+//        debugPrint("Interstitial has been presented. name[\(self.name(forAdObject: ad) ?? "")]");
+//        //UIApplication.shared.setStatusBarHidden(true, with: .none);
+//        guard let unit = self.unit(forAdObject: ad) else{
+//            return;
+//        }
+//
+//        self.delegate?.GAD(manager: self, willPresentADForUnit: unit);
+//        self.window.rootViewController?.setNeedsStatusBarAppearanceUpdate();
+//    }
     
     /*func interstitialDidFail(toPresentScreen ad: GADInterstitial) {
      print("Interstitial has been failed. name[\(self.name(forAdObject: ad) ?? "")]");
      }*/
     
-    public func interstitialDidDismissScreen(_ ad: GADInterstitial) {
-        print("Interstitial has been dismissed. name[\(self.name(forAdObject: ad) ?? "")]");
-        /*self.window.rootViewController?.showAlert(title: "후원해주셔서 감사합니다.", msg: "불편하신 사항은 리뷰에 남겨주시면 반영하겠습니다.", actions: [UIAlertAction.init(title: "확인", style: .default, handler: nil), UIAlertAction.init(title: "평가하기", style: .default, handler: { (act) in
-         UIApplication.shared.openReview();
-         })], style: .alert);*/
-        defer{
-//            UIApplication.shared.setStatusBarHidden(self.window.rootViewController?.prefersStatusBarHidden ?? false, with: .none);
-            self.reprepare(adObject: ad); //reload
-        }
-        
-        guard let unit = self.unit(forAdObject: ad) else{
-            return;
-        }
-        
-        self.isLoading[unit] = false;
-        self.delegate?.GAD(manager: self, didDismissADForUnit: unit);
-        self.window.rootViewController?.setNeedsStatusBarAppearanceUpdate();
-
-        let completion = self.completions[unit];
-        self.completions[unit] = nil;
-        completion?(unit, ad, true);
-    }
-    
-    public func interstitial(_ ad: GADInterstitial, didFailToReceiveAdWithError error: GADRequestError) {
-        print("Interstitial occured error. name[\(self.name(forAdObject: ad) ?? "")] error[\(error)]");
-        
-        guard let _ = GADErrorCode.init(rawValue: error.code) else {
-            return;
-        }
-        
-        guard let unit = self.unit(forAdObject: ad) else {
-            return;
-        }
-        
-        self.isLoading[unit] = false;
-        
-//        switch code {
-//        case .internalError:
-            let completion = self.completions[unit];
-            self.completions[unit] = nil;
-            completion?(unit, ad, false);
-//            break;
-//        default:
-//            break;
+//    public func interstitialDidDismissScreen(_ ad: GADInterstitial) {
+//        print("Interstitial has been dismissed. name[\(self.name(forAdObject: ad) ?? "")]");
+//        /*self.window.rootViewController?.showAlert(title: "후원해주셔서 감사합니다.", msg: "불편하신 사항은 리뷰에 남겨주시면 반영하겠습니다.", actions: [UIAlertAction.init(title: "확인", style: .default, handler: nil), UIAlertAction.init(title: "평가하기", style: .default, handler: { (act) in
+//         UIApplication.shared.openReview();
+//         })], style: .alert);*/
+//        defer{
+////            UIApplication.shared.setStatusBarHidden(self.window.rootViewController?.prefersStatusBarHidden ?? false, with: .none);
+//            self.reprepare(adObject: ad); //reload
 //        }
-     
-    }
+//
+//        guard let unit = self.unit(forAdObject: ad) else{
+//            return;
+//        }
+//
+//        self.isLoading[unit] = false;
+//        self.delegate?.GAD(manager: self, didDismissADForUnit: unit);
+//        self.window.rootViewController?.setNeedsStatusBarAppearanceUpdate();
+//
+//        let completion = self.completions[unit];
+//        self.completions[unit] = nil;
+//        completion?(unit, ad, true);
+//    }
+    
+//    public func interstitial(_ ad: GADInterstitial, didFailToReceiveAdWithError error: GADRequestError) {
+//        print("Interstitial occured error. name[\(self.name(forAdObject: ad) ?? "")] error[\(error)]");
+//
+//        guard let _ = GADErrorCode.init(rawValue: error.code) else {
+//            return;
+//        }
+//
+//        guard let unit = self.unit(forAdObject: ad) else {
+//            return;
+//        }
+//
+//        self.isLoading[unit] = false;
+//
+////        switch code {
+////        case .internalError:
+//            let completion = self.completions[unit];
+//            self.completions[unit] = nil;
+//            completion?(unit, ad, false);
+////            break;
+////        default:
+////            break;
+////        }
+//
+//    }
     
     // MARK: GADFullScreenContentDelegate
     public func adDidPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
