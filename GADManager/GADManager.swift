@@ -158,6 +158,10 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
                 let req = GADRequest();
                 if hideTestLabel ?? false { req.hideTestLabel() }
                 self.isLoading[unit] = true;
+                #if DEBUG
+                var unitId = "ca-app-pub-3940256099942544/4411468910";
+                #endif
+                
                 GADInterstitialAd.load(withAdUnitID: unitId, request: req) { [weak self](newAd, error) in
                     self?.isLoading[unit] = false;
                     if let error = error{
@@ -199,6 +203,10 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         //guard let _ = self.adObjects[unit] else{
             if let unitId = self.identifiers?[unit.rawValue]{
                 value = GADBannerView.init(adSize: size);
+                
+                #if DEBUG
+                let unitId = "ca-app-pub-3940256099942544/2934735716";
+                #endif
                 value?.adUnitID = unitId;
                 //ad.delegate = self;
 //                let req = GADRequest();
