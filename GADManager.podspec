@@ -144,8 +144,8 @@ s.static_framework = true
 
 s.dependency "Google-Mobile-Ads-SDK" #"Firebase/AdMob"
 #s.dependency "Firebase/Analytics"
-s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' } #, 'VALID_ARCHS' => 'arm64 x86_64 i386'
-s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' } #, 'VALID_ARCHS' => 'arm64 x86_64 i386'
+s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' } #, 'VALID_ARCHS' => 'arm64 x86_64 i386'
+s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' } #, 'VALID_ARCHS' => 'arm64 x86_64 i386'
 #s.dependency.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
 
 #                            'ONLY_ACTIVE_ARCH' => 'YES'
