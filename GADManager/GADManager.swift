@@ -174,7 +174,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
                     
                     newAd?.fullScreenContentDelegate = self;
                     self?.adObjects[unit] = newAd;
-                    debugPrint("GAD Interstitial is ready. unit[\(unit)] id[\(unitId)] ad[\(newAd)]");
+                    debugPrint("GAD Interstitial is ready. unit[\(unit)] id[\(unitId)] ad[\(newAd?.debugDescription ?? "")]");
                 }
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
@@ -204,7 +204,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
                 
                 value?.adUnitID = unitId;
                 
-                print("GAD Banner is ready. unit[\(unit)] id[\(unitId)] newAd[\(value)]");
+                print("GAD Banner is ready. unit[\(unit)] id[\(unitId)] newAd[\(value?.debugDescription ?? "")]");
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
             }
@@ -333,7 +333,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
             let ad = self.adObjects[unit];
             
             if !(self.isLoading[unit] ?? false){
-                print("[\(#function)] ad is not loading. unit[\(unit)] ad[\(ad)]");
+                print("[\(#function)] ad is not loading. unit[\(unit)] ad[\(ad?.debugDescription ?? "")]");
                 
                 if ad is GADInterstitialAd{
                     self.reprepare(interstitialUnit: unit);
