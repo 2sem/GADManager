@@ -158,9 +158,6 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
                 let req = GADRequest();
                 if hideTestLabel ?? false { req.hideTestLabel() }
                 self.isLoading[unit] = true;
-                #if DEBUG
-                var unitId = "ca-app-pub-3940256099942544/4411468910";
-                #endif
                 
                 GADInterstitialAd.load(withAdUnitID: unitId, request: req) { [weak self](newAd, error) in
                     self?.isLoading[unit] = false;
@@ -168,7 +165,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
     //                        guard let _ = GADErrorCode.init(rawValue: error.code) else {
     //                            return;
     //                        }
-                        
+                        print("GAD Interstitial is error. unit[\(unit)] id[\(unitId)] error[\(error)]");
                         let completion = self?.completions[unit];
                         self?.completions[unit] = nil;
                         completion?(unit, newAd, false);
@@ -177,6 +174,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
                     
                     newAd?.fullScreenContentDelegate = self;
                     self?.adObjects[unit] = newAd;
+                    debugPrint("GAD Interstitial is ready. unit[\(unit)] id[\(unitId)] ad[\(newAd)]");
                 }
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
@@ -204,23 +202,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
             if let unitId = self.identifiers?[unit.rawValue]{
                 value = GADBannerView.init(adSize: size);
                 
-                #if DEBUG
-                let unitId = "ca-app-pub-3940256099942544/2934735716";
-                #endif
                 value?.adUnitID = unitId;
-                //ad.delegate = self;
-//                let req = GADRequest();
-//                if hideTestLabel ?? false { req.hideTestLabel() }
-                #if DEBUG
-                //req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
-                #endif
-                /*if let alert = UIApplication.shared.keyWindow?.rootViewController?.presentedViewController as? UIAlertController{
-                 alert.dismiss(animated: false, completion: nil);
-                 }
-                 }*/
                 
-//                value.load(req);
-                //self.adObjects[unit] = ad;
+                print("GAD Banner is ready. unit[\(unit)] id[\(unitId)] newAd[\(value)]");
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
             }
@@ -234,19 +218,12 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         self.intervals[unit] = interval;
         self.hideTestLabels[unit] = hideTestLabel;
         guard let _ = self.adObjects[unit] else{
-            if let _unitId = self.identifiers?[unit.rawValue]{
+            if let unitId = self.identifiers?[unit.rawValue]{
                 let req = GADRequest();
                 if hideTestLabel ?? false { req.hideTestLabel() }
-//                #if DEBUG
-//                req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
-//                #endif
-                #if DEBUG
-                let unitId = isTest ? "ca-app-pub-3940256099942544/5662855259" : _unitId;
-                #else
-                let unitId = _unitId;
-                #endif
                 
                 self.isLoading[unit] = true;
+
                 GADAppOpenAd.load(withAdUnitID: unitId, request: req, orientation: orientation) { [weak self](newAd, error) in
                     guard let self = self else{
                         return;
@@ -255,12 +232,12 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
                     newAd?.fullScreenContentDelegate = self;
                     self.adObjects[unit] = newAd;
                     if let error = error{
-                        print("Opening is error. unit[\(unit)] error[\(error)]");
+                        print("GAD Opening is error. unit[\(unit)] id[\(unitId)] error[\(error)]");
                         self.isLoading[unit] = false;
                         return;
                     }
                     
-                    print("Opening is ready. unit[\(unit)]");
+                    debugPrint("Opening is ready. unit[\(unit)]");
                     self.isLoading[unit] = false;
                     self.delegate?.GAD(manager: self, updateLastPreparedTimeForUnit: unit, preparedTime: Date());
                     guard let completion = self.completions[unit] else{
@@ -356,7 +333,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
             let ad = self.adObjects[unit];
             
             if !(self.isLoading[unit] ?? false){
-                print("[\(#function)] ad is not loading");
+                print("[\(#function)] ad is not loading. unit[\(unit)] ad[\(ad)]");
                 
                 if ad is GADInterstitialAd{
                     self.reprepare(interstitialUnit: unit);
