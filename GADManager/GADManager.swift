@@ -195,7 +195,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         }
     }
     
-    public func prepare(bannerUnit unit: E, size: GADAdSize = kGADAdSizeBanner) -> GADBannerView?{
+    public func prepare(bannerUnit unit: E, size: GADAdSize = GADAdSizeBanner) -> GADBannerView?{
         var value : GADBannerView?;
         //self.intervals[unit] = interval;
         //guard let _ = self.adObjects[unit] else{
@@ -471,7 +471,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
 //    }
     
     // MARK: GADFullScreenContentDelegate
-    public func adDidPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    public func adWillPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
         print("Opening has been presented. name[\(self.name(forAdObject: ad as! NSObject) ?? "")]");
         guard let unit = self.unit(forAdObject: ad as! NSObject) else{
             return;
