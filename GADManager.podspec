@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 #
 #
 s.name         = "GADManager"
-s.version      = "1.2.24"
+s.version      = "1.2.25"
 s.swift_version = "4.1"
 s.summary      = "Google AD Manager Library"
 
@@ -62,7 +62,7 @@ s.license      = { :type => "MIT", :file => "LICENSE" }
 s.author             = "YoungJun Lee"
 # Or just: s.author    = ""
 # s.authors            = { "" => "" }
-s.social_media_url   = "http://www.facebook.com/youngjun.lee.3998"
+s.social_media_url   = "https://www.linkedin.com/in/gamehelper/"
 
 # ――― Platform Specifics ――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
 #
