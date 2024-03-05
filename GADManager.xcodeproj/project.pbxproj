@@ -30,8 +30,6 @@
 		2CAE6A70253824A100355B7F /* UIApplication+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+.swift"; sourceTree = "<group>"; };
 		2CD9FBA82563EF080022AE57 /* GADRequest+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GADRequest+.swift"; sourceTree = "<group>"; };
 		5D530E89604D91B49315DD3E /* Pods_GADManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GADManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.debug.xcconfig"; path = "Target Support Files/Pods-GADManager/Pods-GADManager.debug.xcconfig"; sourceTree = "<group>"; };
-		CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.release.xcconfig"; path = "Target Support Files/Pods-GADManager/Pods-GADManager.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,7 +51,6 @@
 				2C2207B42286AF1F00DE2544 /* LICENSE */,
 				2C2207A12286A0C700DE2544 /* GADManager */,
 				2C2207A02286A0C700DE2544 /* Products */,
-				51AC61B496BFC1FF11D513A6 /* Pods */,
 				AD612DA64E58D93F79C2EA41 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -86,15 +83,6 @@
 				2CD9FBA82563EF080022AE57 /* GADRequest+.swift */,
 			);
 			path = extensions;
-			sourceTree = "<group>";
-		};
-		51AC61B496BFC1FF11D513A6 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */,
-				CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */,
-			);
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		AD612DA64E58D93F79C2EA41 /* Frameworks */ = {
@@ -348,7 +336,6 @@
 		};
 		2C2207A82286A0C700DE2544 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 97E8FB8D1C84D1052A69D049 /* Pods-GADManager.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -383,7 +370,6 @@
 		};
 		2C2207A92286A0C700DE2544 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CE6F2ACB20F4753BAF408228 /* Pods-GADManager.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";

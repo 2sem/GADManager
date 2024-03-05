@@ -224,7 +224,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
                 
                 self.isLoading[unit] = true;
 
-                GADAppOpenAd.load(withAdUnitID: unitId, request: req, orientation: orientation) { [weak self](newAd, error) in
+                GADAppOpenAd.load(withAdUnitID: unitId, request: req) { [weak self](newAd, error) in
                     guard let self = self else{
                         return;
                     }
