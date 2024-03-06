@@ -71,7 +71,7 @@ s.social_media_url   = "https://www.linkedin.com/in/gamehelper/"
 #
 
 # s.platform     = :ios
-s.platform     = :ios, "9.0"
+s.platform     = :ios, "12.0"
 
 #  When using multiple platforms
 #s.ios.deployment_target = "10.0"

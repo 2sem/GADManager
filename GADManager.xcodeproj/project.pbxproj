@@ -19,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2AA23CA1D45F868BBFB62AB7 /* Pods-GADManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.release.xcconfig"; path = "Target Support Files/Pods-GADManager/Pods-GADManager.release.xcconfig"; sourceTree = "<group>"; };
 		2C22079F2286A0C700DE2544 /* GADManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GADManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C2207A32286A0C700DE2544 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2C2207B02286A17700DE2544 /* GADManager.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = GADManager.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
@@ -30,6 +31,7 @@
 		2CAE6A70253824A100355B7F /* UIApplication+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+.swift"; sourceTree = "<group>"; };
 		2CD9FBA82563EF080022AE57 /* GADRequest+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GADRequest+.swift"; sourceTree = "<group>"; };
 		5D530E89604D91B49315DD3E /* Pods_GADManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GADManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF6E387EDEBB9B5164FF16D5 /* Pods-GADManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GADManager.debug.xcconfig"; path = "Target Support Files/Pods-GADManager/Pods-GADManager.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +54,7 @@
 				2C2207A12286A0C700DE2544 /* GADManager */,
 				2C2207A02286A0C700DE2544 /* Products */,
 				AD612DA64E58D93F79C2EA41 /* Frameworks */,
+				F3E9D37019578DF2FD954EF9 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -91,6 +94,15 @@
 				5D530E89604D91B49315DD3E /* Pods_GADManager.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F3E9D37019578DF2FD954EF9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				CF6E387EDEBB9B5164FF16D5 /* Pods-GADManager.debug.xcconfig */,
+				2AA23CA1D45F868BBFB62AB7 /* Pods-GADManager.release.xcconfig */,
+			);
+			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -336,6 +348,7 @@
 		};
 		2C2207A82286A0C700DE2544 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CF6E387EDEBB9B5164FF16D5 /* Pods-GADManager.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -349,7 +362,7 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				INFOPLIST_FILE = GADManager/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -360,7 +373,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
@@ -370,6 +386,7 @@
 		};
 		2C2207A92286A0C700DE2544 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2AA23CA1D45F868BBFB62AB7 /* Pods-GADManager.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -383,7 +400,7 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				INFOPLIST_FILE = GADManager/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -394,7 +411,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
