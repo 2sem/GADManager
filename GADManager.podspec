@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
 #
 s.name         = "GADManager"
 s.version      = "1.3.0"
-s.swift_version = "4.1"
+s.swift_version = "5.0"
 s.summary      = "Google AD Manager Library"
 
 # This description is used to generate tags and improve search results.
