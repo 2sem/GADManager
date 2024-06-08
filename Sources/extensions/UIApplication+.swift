@@ -21,7 +21,7 @@ extension UIApplication{
     /**
         os compatible for function to open url
     */
-    private func openCompatible(_ url: URL, options: [String : Any] = [:], completionHandler completion: ((Bool) -> Swift.Void)? = nil){
+    private func openCompatible(_ url: URL, options: [UIApplication.OpenExternalURLOptionsKey : Any] = [:], completionHandler completion: ((Bool) -> Swift.Void)? = nil){
         if #available(iOS 10.0, *) {
             self.open(url, options: options, completionHandler: completion)
         } else {
