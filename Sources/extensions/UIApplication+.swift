@@ -34,7 +34,7 @@ extension UIApplication{
          - parameter completion: block to call after opening Settings App has been completed
     */
     public func openSettings(_ completion: ((Bool) -> Swift.Void)? = nil){
-        let url_settings = URL(string:UIApplicationOpenSettingsURLString);
+        let url_settings = URL(string:UIApplication.openSettingsURLString);
         self.openCompatible(url_settings!, options: [:], completionHandler: completion)
     }
 }
