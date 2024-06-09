@@ -57,7 +57,7 @@ extension UIViewController {
     public func showIndicator(title: String?, msg: String = "\n\n\n", completion: (() -> Void)? = nil) -> UIAlertController{
         let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert);
         
-        let indicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge);
+        let indicator = UIActivityIndicatorView(style: .whiteLarge);
         indicator.center = CGPoint(x: 130, y: 65);
         indicator.color = UIColor.black;
         indicator.startAnimating();
