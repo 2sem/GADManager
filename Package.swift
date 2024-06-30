@@ -21,7 +21,8 @@ let package = Package(
             name: "GADManager",
             dependencies: [.product(name: "GoogleMobileAds",
                                  package: "swift-package-manager-google-mobile-ads")
-                          ]),
+                          ],
+            path: "Sources"),
         .testTarget(
             name: "GADManagerTests",
             dependencies: ["GADManager"]),
