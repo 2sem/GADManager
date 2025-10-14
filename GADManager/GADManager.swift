@@ -390,6 +390,17 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         //RSDefaults.LastFullADShown = Date();
     }
     
+    public func createLoader(forAd unit: E, withAdTypes adTypes: [AdLoaderAdType], withOptions options: [NativeAdViewAdOptions] = []) -> AdLoader? {
+        guard let unitId = self.identifiers?[unit.rawValue] else {
+            assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
+            return nil
+        }
+        
+        print("GAD Banner is ready. unit[\(unit)] id[\(unitId)]");
+        
+        return AdLoader(adUnitID: unitId, rootViewController: nil, adTypes: adTypes, options: options)
+    }
+    
 //    public func interstitialDidReceiveAd(_ ad: GADInterstitial) {
 //        print("Interstitial is ready. name[\(self.name(forAdObject: ad) ?? "")]");
 //        guard let unit = self.unit(forAdObject: ad) else{
