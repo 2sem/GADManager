@@ -25,7 +25,7 @@ extension UIViewController {
          - returns: Alert Controller generated with given information and returns it
     */
     @discardableResult
-    public func showAlert(title: String, msg: String, actions : [UIAlertAction], style: UIAlertControllerStyle, sourceView: UIView? = nil, sourceRect: CGRect? = nil, popoverDelegate: UIPopoverPresentationControllerDelegate? = nil, completion: (() -> Void)? = nil) -> UIAlertController{
+    public func showAlert(title: String, msg: String, actions : [UIAlertAction], style: UIAlertController.Style, sourceView: UIView? = nil, sourceRect: CGRect? = nil, popoverDelegate: UIPopoverPresentationControllerDelegate? = nil, completion: (() -> Void)? = nil) -> UIAlertController{
         let alert = UIAlertController(title: title, message: msg, preferredStyle: style);
         for act in actions{
             alert.addAction(act);
@@ -57,7 +57,7 @@ extension UIViewController {
     public func showIndicator(title: String?, msg: String = "\n\n\n", completion: (() -> Void)? = nil) -> UIAlertController{
         let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert);
         
-        let indicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge);
+        let indicator = UIActivityIndicatorView(style: .whiteLarge);
         indicator.center = CGPoint(x: 130, y: 65);
         indicator.color = UIColor.black;
         indicator.startAnimating();
@@ -213,7 +213,7 @@ extension UIViewController {
          - parameter titleForOK: title of "OK" button
          - parameter titleForSettings: title of "Settings" button
     */
-    public func openSettingsOrCancel(title: String = "Something is disabled", msg: String = "Please enable to do something", style: UIAlertControllerStyle = .alert, titleForOK: String = "OK", titleForSettings: String = "Settings"){
+    public func openSettingsOrCancel(title: String = "Something is disabled", msg: String = "Please enable to do something", style: UIAlertController.Style = .alert, titleForOK: String = "OK", titleForSettings: String = "Settings"){
         let acts = [UIAlertAction(title: titleForSettings, style: .default, handler: { (act) in
             UIApplication.shared.openSettings();
         }), UIAlertAction(title: titleForOK, style: .default, handler: nil)];

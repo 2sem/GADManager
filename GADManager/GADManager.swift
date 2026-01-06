@@ -30,7 +30,7 @@ public extension GADManagerDelegate{
     func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E){}
 }
 
-public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDelegate where E.RawValue == String, E: Hashable{
+public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullScreenContentDelegate where E.RawValue == String, E: Hashable{
     var window : UIWindow;
     
     public static var defaultInterval : TimeInterval { return 60.0 * 60.0 * 1.0 }
@@ -45,11 +45,35 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
     var adObjects : [E : NSObject] = [:];
     var intervals : [E : TimeInterval] = [:];
     var isLoading : [E : Bool] = [:];
+    var isTesting : [E : Bool] = [:];
     var lastBeginLoading : [E : Date] = [:];
     var hideTestLabels : [E: Bool] = [:];
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
     public var canShowFirstTime = true;
     public weak var delegate : GADManagerDelegate?;
+    
+    public enum AdType {
+        case opening
+        case adaptive
+        case banner
+        case full
+        case reward
+        case rewardFull
+        case native
+        case nativeVideo
+    }
+    
+    var testUnitIds : [AdType : String] = [
+        .opening : "ca-app-pub-3940256099942544/5575463023",
+        .adaptive: "ca-app-pub-3940256099942544/2435281174",
+        .banner: "ca-app-pub-3940256099942544/2934735716",
+        .full: "ca-app-pub-3940256099942544/4411468910",
+        .reward: "ca-app-pub-3940256099942544/1712485313",
+        .rewardFull: "ca-app-pub-3940256099942544/6978759866",
+        .native: "ca-app-pub-3940256099942544/3986624511",
+        .nativeVideo: "ca-app-pub-3940256099942544/2521693316"
+        
+    ]
     
     /*fileprivate static var _shared : GADManager<E>?;
      static var shared : GADManager<E>?{
@@ -77,6 +101,10 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         }
         
         return unit;
+    }
+    
+    func adId(forUnit unit: E, andForAdType adType: AdType, isTesting: Bool) -> String? {
+        isTesting ? testUnitIds[adType] : identifiers?[unit.rawValue]
     }
     
     #if true
@@ -147,19 +175,21 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         return value;
     }
     
-    public func prepare(interstitialUnit unit: E, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
+    public func prepare(interstitialUnit unit: E, isTesting: Bool = false, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
+        self.isTesting[unit] = isTesting;
         self.intervals[unit] = interval;
+        
         if let hideTestLabel = hideTestLabel{
             self.hideTestLabels[unit] = hideTestLabel;
         }
         
         func loadAd(unit: E){
-            if let unitId = self.identifiers?[unit.rawValue]{
-                let req = GADRequest();
+            if let unitId = self.adId(forUnit: unit, andForAdType: .full, isTesting: isTesting){
+                let req = GoogleMobileAds.Request();
                 if hideTestLabel ?? false { req.hideTestLabel() }
                 self.isLoading[unit] = true;
                 
-                GADInterstitialAd.load(withAdUnitID: unitId, request: req) { [weak self](newAd, error) in
+                GoogleMobileAds.InterstitialAd.load(with: unitId, request: req) { [weak self](newAd, error) in
                     self?.isLoading[unit] = false;
                     if let error = error{
     //                        guard let _ = GADErrorCode.init(rawValue: error.code) else {
@@ -186,21 +216,21 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
             return;
         }
         
-        if let fullAd = ad as? GADInterstitialAd{
+        if let fullAd = ad as? GoogleMobileAds.InterstitialAd{
             do{
-                try fullAd.canPresent(fromRootViewController: self.window.rootViewController!)
+                try fullAd.canPresent(from: self.window.rootViewController!)
             }catch{
                 loadAd(unit: unit);
             }
         }
     }
     
-    public func prepare(bannerUnit unit: E, size: GADAdSize = GADAdSizeBanner) -> GADBannerView?{
-        var value : GADBannerView?;
+    public func prepare(bannerUnit unit: E, isTesting: Bool = false, size: GoogleMobileAds.AdSize = GoogleMobileAds.AdSizeBanner) -> GoogleMobileAds.BannerView?{
+        var value : GoogleMobileAds.BannerView?;
         //self.intervals[unit] = interval;
         //guard let _ = self.adObjects[unit] else{
-            if let unitId = self.identifiers?[unit.rawValue]{
-                value = GADBannerView.init(adSize: size);
+            if let unitId = self.adId(forUnit: unit, andForAdType: .banner, isTesting: isTesting) {
+                value = GoogleMobileAds.BannerView.init(adSize: size);
                 
                 value?.adUnitID = unitId;
                 
@@ -214,17 +244,18 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         return value;
     }
     
-    public func prepare(openingUnit unit: E, isTest: Bool = false, orientation: UIInterfaceOrientation = .unknown, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
+    public func prepare(openingUnit unit: E, isTesting: Bool = false, orientation: UIInterfaceOrientation = .unknown, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
         self.intervals[unit] = interval;
+        self.isTesting[unit] = isTesting;
         self.hideTestLabels[unit] = hideTestLabel;
         guard let _ = self.adObjects[unit] else{
-            if let unitId = self.identifiers?[unit.rawValue]{
-                let req = GADRequest();
+            if let unitId = self.adId(forUnit: unit, andForAdType: .opening, isTesting: isTesting) {
+                let req = GoogleMobileAds.Request();
                 if hideTestLabel ?? false { req.hideTestLabel() }
                 
                 self.isLoading[unit] = true;
 
-                GADAppOpenAd.load(withAdUnitID: unitId, request: req) { [weak self](newAd, error) in
+                GoogleMobileAds.AppOpenAd.load(with: unitId, request: req) { [weak self](newAd, error) in
                     guard let self = self else{
                         return;
                     }
@@ -257,52 +288,52 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         //reprepare
     }
     
-    func reprepare(interstitialUnit unit: E){
+    func reprepare(interstitialUnit unit: E, isTesting: Bool = false){
         self.adObjects[unit] = nil;
         
         if let interval = self.intervals[unit]{
-            self.prepare(interstitialUnit: unit, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
+            self.prepare(interstitialUnit: unit, isTesting: isTesting, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
         }else{
-            self.prepare(interstitialUnit: unit, hideTestLabel: self.hideTestLabels[unit]);
+            self.prepare(interstitialUnit: unit, isTesting: isTesting, hideTestLabel: self.hideTestLabels[unit]);
         }
     }
     
-    func reprepare(openingUnit unit: E, isTest: Bool = false){
+    func reprepare(openingUnit unit: E, isTesting: Bool = false){
         self.adObjects[unit] = nil;
         
         if let interval = self.intervals[unit]{
-            self.prepare(openingUnit: unit, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
+            self.prepare(openingUnit: unit, isTesting: isTesting, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
         }else{
-            self.prepare(openingUnit: unit, hideTestLabel: self.hideTestLabels[unit]);
+            self.prepare(openingUnit: unit, isTesting: isTesting, hideTestLabel: self.hideTestLabels[unit]);
         }
     }
     
-    func reprepare(adObject: NSObject, isTest: Bool = false){
+    func reprepare(adObject: NSObject, isTesting: Bool = false){
         guard let name = self.name(forAdObject: adObject), let unit = E.init(rawValue: name), let interval = self.intervals[unit] else{
             return;
         }
         
-        if adObject is GADInterstitialAd{
-            self.adObjects[unit] = nil;
-            self.prepare(interstitialUnit: unit, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
-        }else if adObject is GADAppOpenAd{
-            self.adObjects[unit] = nil;
-            self.prepare(openingUnit: unit, isTest: isTest, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
+        let isTesting = self.isTesting[unit] ?? isTesting;
+        
+        if adObject is GoogleMobileAds.InterstitialAd{
+            self.reprepare(interstitialUnit: unit, isTesting: isTesting);
+        }else if adObject is GoogleMobileAds.AppOpenAd{
+            self.reprepare(openingUnit: unit, isTesting: isTesting);
         }
     }
     
     func isPrepared(_ unit: E) -> Bool{
         var value = false;
         
-        if let interstitial = self.adObjects[unit] as? GADInterstitialAd{
+        if let interstitial = self.adObjects[unit] as? GoogleMobileAds.InterstitialAd{
             do{
                 if let viewController = self.window.rootViewController{
     //                value = interstitial.isReady;
-                    try interstitial.canPresent(fromRootViewController: viewController);
+                    try interstitial.canPresent(from: viewController);
                     value = true;
                 }
             }catch{}
-        }else if let _ = self.adObjects[unit] as? GADAppOpenAd{ //opening
+        }else if let _ = self.adObjects[unit] as? GoogleMobileAds.AppOpenAd{ //opening
 //            let time_1970 = Date.init(timeIntervalSince1970: 0);
             let now = Date();
             let lastPrepared = delegate?.GAD(manager: self, lastPreparedTimeForUnit: unit) ?? now;
@@ -317,7 +348,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         return value;
     }
     
-    public func show(unit: E, force : Bool = false, needToWait wait: Bool = false, isTest: Bool = false, viewController: UIViewController? = nil, completion: ((E, NSObject?, Bool) -> Void)? = nil){
+    public func show(unit: E, force : Bool = false, needToWait wait: Bool = false, isTesting: Bool = false, viewController: UIViewController? = nil, completion: ((E, NSObject?, Bool) -> Void)? = nil){
+        self.isTesting[unit] = isTesting;
+        
         guard self.canShow(unit) || force else {
             //self.window.rootViewController?.showAlert(title: "알림", msg: "1시간에 한번만 후원하실 수 있습니다 ^^;", actions: [UIAlertAction(title: "확인", style: .default, handler: nil)], style: .alert);
             self.completions[unit] = nil;
@@ -336,9 +369,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
                 print("[\(#function)] ad is not loading. unit[\(unit)] ad[\(ad?.debugDescription ?? "")]");
                 
                 if ad is GADInterstitialAd{
-                    self.reprepare(interstitialUnit: unit);
+                    self.reprepare(interstitialUnit: unit, isTesting: isTesting);
                 }else if ad is GADAppOpenAd{
-                    self.reprepare(openingUnit: unit, isTest: isTest);
+                    self.reprepare(openingUnit: unit, isTesting: isTesting);
                 }
             }else{
                 print("[\(#function)] ad is loading");
@@ -375,19 +408,30 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
             return;
         }
         
-        if let ad = self.adObjects[unit] as? GADInterstitialAd{
+        if let ad = self.adObjects[unit] as? GoogleMobileAds.InterstitialAd{
             print("present interstital ad view[\(self.window.rootViewController?.description ?? "")]");
             self.completions[unit] = completion;
-            ad.present(fromRootViewController: viewController ?? self.window.rootViewController!);
+            ad.present(from: viewController ?? self.window.rootViewController!);
             self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: Date());
-        }else if let ad = self.adObjects[unit] as? GADAppOpenAd{
+        }else if let ad = self.adObjects[unit] as? GoogleMobileAds.AppOpenAd{
             print("present opening ad view[\(self.window.rootViewController?.description ?? "")]");
             self.completions[unit] = completion;
-            ad.present(fromRootViewController: viewController ?? self.window.rootViewController!);
+            ad.present(from: viewController ?? self.window.rootViewController!);
             self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: Date());
         }
         
         //RSDefaults.LastFullADShown = Date();
+    }
+    
+    public func createNativeLoader(forAd unit: E, withOptions options: [NativeAdViewAdOptions] = [], isTesting: Bool = false) -> AdLoader? {
+        guard let unitId = self.adId(forUnit: unit, andForAdType: .native, isTesting: isTesting) else {
+            assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
+            return nil
+        }
+        
+        print("GAD Native AdLoader is ready. unit[\(unit)] id[\(unitId)]");
+        
+        return AdLoader(adUnitID: unitId, rootViewController: nil, adTypes: [.native], options: options)
     }
     
 //    public func interstitialDidReceiveAd(_ ad: GADInterstitial) {
@@ -471,7 +515,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
 //    }
     
     // MARK: GADFullScreenContentDelegate
-    public func adWillPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    public func adWillPresentFullScreenContent(_ ad: GoogleMobileAds.FullScreenPresentingAd) {
         print("Opening has been presented. name[\(self.name(forAdObject: ad as! NSObject) ?? "")]");
         guard let unit = self.unit(forAdObject: ad as! NSObject) else{
             return;
@@ -480,7 +524,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         self.delegate?.GAD(manager: self, willPresentADForUnit: unit);
     }
     
-    public func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    public func adDidDismissFullScreenContent(_ ad: GoogleMobileAds.FullScreenPresentingAd) {
         let adObj = ad as! NSObject;
         print("Opening has been dismissed. name[\(self.name(forAdObject: adObj) ?? "")]");
         /*self.window.rootViewController?.showAlert(title: "후원해주셔서 감사합니다.", msg: "불편하신 사항은 리뷰에 남겨주시면 반영하겠습니다.", actions: [UIAlertAction.init(title: "확인", style: .default, handler: nil), UIAlertAction.init(title: "평가하기", style: .default, handler: { (act) in
@@ -502,15 +546,10 @@ public class GADManager<E : RawRepresentable> : NSObject, GADFullScreenContentDe
         completion?(unit, adObj, true);
     }
     
-    public func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+    public func ad(_ ad: GoogleMobileAds.FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
         let adObj = ad as! NSObject;
         
         print("Opening occured error. name[\(self.name(forAdObject: adObj) ?? "")] error[\(error)]");
-        let error = error as NSError;
-        
-        guard let _ = GADErrorCode.init(rawValue: error.code) else {
-            return;
-        }
         
         guard let unit = self.unit(forAdObject: adObj) else {
             return;
