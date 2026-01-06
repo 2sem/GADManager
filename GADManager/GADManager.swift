@@ -45,6 +45,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     var adObjects : [E : NSObject] = [:];
     var intervals : [E : TimeInterval] = [:];
     var isLoading : [E : Bool] = [:];
+    var isTesting : [E : Bool] = [:];
     var lastBeginLoading : [E : Date] = [:];
     var hideTestLabels : [E: Bool] = [:];
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
@@ -175,7 +176,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     }
     
     public func prepare(interstitialUnit unit: E, isTesting: Bool = false, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
+        self.isTesting[unit] = isTesting;
         self.intervals[unit] = interval;
+        
         if let hideTestLabel = hideTestLabel{
             self.hideTestLabels[unit] = hideTestLabel;
         }
@@ -243,6 +246,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     
     public func prepare(openingUnit unit: E, isTesting: Bool = false, orientation: UIInterfaceOrientation = .unknown, interval: TimeInterval = GADManager.defaultInterval, hideTestLabel: Bool? = nil){
         self.intervals[unit] = interval;
+        self.isTesting[unit] = isTesting;
         self.hideTestLabels[unit] = hideTestLabel;
         guard let _ = self.adObjects[unit] else{
             if let unitId = self.adId(forUnit: unit, andForAdType: .opening, isTesting: isTesting) {
@@ -309,12 +313,12 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
             return;
         }
         
+        let isTesting = self.isTesting[unit] ?? isTesting;
+        
         if adObject is GoogleMobileAds.InterstitialAd{
-            self.adObjects[unit] = nil;
-            self.prepare(interstitialUnit: unit, isTesting: isTesting, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
+            self.reprepare(interstitialUnit: unit, isTesting: isTesting);
         }else if adObject is GoogleMobileAds.AppOpenAd{
-            self.adObjects[unit] = nil;
-            self.prepare(openingUnit: unit, isTesting: isTesting, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
+            self.reprepare(openingUnit: unit, isTesting: isTesting);
         }
     }
     
@@ -345,6 +349,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     }
     
     public func show(unit: E, force : Bool = false, needToWait wait: Bool = false, isTesting: Bool = false, viewController: UIViewController? = nil, completion: ((E, NSObject?, Bool) -> Void)? = nil){
+        self.isTesting[unit] = isTesting;
+        
         guard self.canShow(unit) || force else {
             //self.window.rootViewController?.showAlert(title: "알림", msg: "1시간에 한번만 후원하실 수 있습니다 ^^;", actions: [UIAlertAction(title: "확인", style: .default, handler: nil)], style: .alert);
             self.completions[unit] = nil;
