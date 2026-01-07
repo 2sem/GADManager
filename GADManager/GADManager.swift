@@ -11,6 +11,14 @@ import GoogleMobileAds
 import AdSupport
 import AppTrackingTransparency
 
+extension UIApplication {
+    var keyRootViewController: UIViewController? {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return nil }
+
+        return windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController
+    }
+}
+
 public protocol GADManagerDelegate : NSObjectProtocol{
     //associatedtype E : RawRepresentable where E.RawValue == String
     func GAD<E>(manager: GADManager<E>, lastPreparedTimeForUnit unit: E) -> Date;
@@ -452,11 +460,11 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
          }*/
         
         //ignore if alert is being presented
-        /*if let alert = UIApplication.shared.keyWindow?.rootViewController?.presentedViewController as? UIAlertController{
+        /*if let alert = UIApplication.shared.keyRootViewController?.presentedViewController as? UIAlertController{
          alert.dismiss(animated: false, completion: nil);
          }*/
         
-        guard !(UIApplication.shared.keyWindow?.rootViewController?.presentedViewController is UIAlertController) else{
+        guard !(UIApplication.shared.keyRootViewController?.presentedViewController is UIAlertController) else{
             //alert.dismiss(animated: false, completion: nil);
             //self.fullAd = nil;
             completion?(unit, self.adObjects[unit], false);
