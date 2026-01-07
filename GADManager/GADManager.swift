@@ -46,6 +46,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     var intervals : [E : TimeInterval] = [:];
     var isLoading : [E : Bool] = [:];
     var isTesting : [E : Bool] = [:];
+    var isRewardUnit : [E : Bool] = [:];
     var lastBeginLoading : [E : Date] = [:];
     var hideTestLabels : [E: Bool] = [:];
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
@@ -150,7 +151,11 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     public func canShow(_ unit: E) -> Bool{
         var value = true;
         let now = Date();
-        
+
+        if self.isRewardUnit[unit] == true {
+            return true;
+        }
+
         guard let delegate = self.delegate else {
             return value;
         }
@@ -287,7 +292,46 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         
         //reprepare
     }
-    
+
+    public func prepare(rewardUnit unit: E, isTesting: Bool = false){
+        self.isTesting[unit] = isTesting;
+        self.isRewardUnit[unit] = true;
+        guard let _ = self.adObjects[unit] else{
+            if let unitId = self.adId(forUnit: unit, andForAdType: .reward, isTesting: isTesting) {
+                let req = GoogleMobileAds.Request();
+
+                self.isLoading[unit] = true;
+
+                GoogleMobileAds.RewardedAd.load(with: unitId, request: req) { [weak self](newAd, error) in
+                    guard let self = self else{
+                        return;
+                    }
+
+                    newAd?.fullScreenContentDelegate = self;
+                    self.adObjects[unit] = newAd;
+                    if let error = error{
+                        print("GAD Reward is error. unit[\(unit)] id[\(unitId)] error[\(error)]");
+                        self.isLoading[unit] = false;
+                        return;
+                    }
+
+                    debugPrint("Reward is ready. unit[\(unit)]");
+                    self.isLoading[unit] = false;
+                    guard let completion = self.completions[unit] else{
+                        return;
+                    }
+
+                    self.show(unit: unit, completion: completion);
+                }
+            }else{
+                assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
+            }
+            return;
+        }
+
+        //reprepare
+    }
+
     func reprepare(interstitialUnit unit: E, isTesting: Bool = false){
         self.adObjects[unit] = nil;
         
@@ -300,25 +344,33 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     
     func reprepare(openingUnit unit: E, isTesting: Bool = false){
         self.adObjects[unit] = nil;
-        
+
         if let interval = self.intervals[unit]{
             self.prepare(openingUnit: unit, isTesting: isTesting, interval: interval, hideTestLabel: self.hideTestLabels[unit]);
         }else{
             self.prepare(openingUnit: unit, isTesting: isTesting, hideTestLabel: self.hideTestLabels[unit]);
         }
     }
-    
+
+    func reprepare(rewardUnit unit: E, isTesting: Bool = false){
+        self.adObjects[unit] = nil;
+
+        self.prepare(rewardUnit: unit, isTesting: isTesting);
+    }
+
     func reprepare(adObject: NSObject, isTesting: Bool = false){
         guard let name = self.name(forAdObject: adObject), let unit = E.init(rawValue: name), let interval = self.intervals[unit] else{
             return;
         }
         
         let isTesting = self.isTesting[unit] ?? isTesting;
-        
+
         if adObject is GoogleMobileAds.InterstitialAd{
             self.reprepare(interstitialUnit: unit, isTesting: isTesting);
         }else if adObject is GoogleMobileAds.AppOpenAd{
             self.reprepare(openingUnit: unit, isTesting: isTesting);
+        }else if adObject is GoogleMobileAds.RewardedAd{
+            self.reprepare(rewardUnit: unit, isTesting: isTesting);
         }
     }
     
@@ -338,13 +390,15 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
             let now = Date();
             let lastPrepared = delegate?.GAD(manager: self, lastPreparedTimeForUnit: unit) ?? now;
             print("[\(#function)] opening ad was prepared[\(lastPrepared)] now[\(now)]");
-            
+
             value = now.timeIntervalSince(lastPrepared) <= type(of: self).opeingExpireInterval;
             if !value{
                 print("[\(#function)] opening ad is expired");
             }
+        }else if self.adObjects[unit] is GoogleMobileAds.RewardedAd{
+            value = true;
         }
-        
+
         return value;
     }
     
@@ -352,7 +406,6 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         self.isTesting[unit] = isTesting;
         
         guard self.canShow(unit) || force else {
-            //self.window.rootViewController?.showAlert(title: "알림", msg: "1시간에 한번만 후원하실 수 있습니다 ^^;", actions: [UIAlertAction(title: "확인", style: .default, handler: nil)], style: .alert);
             self.completions[unit] = nil;
             completion?(unit, self.adObjects[unit], false);
             return;
@@ -367,11 +420,13 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
             
             if !(self.isLoading[unit] ?? false){
                 print("[\(#function)] ad is not loading. unit[\(unit)] ad[\(ad?.debugDescription ?? "")]");
-                
+
                 if ad is GADInterstitialAd{
                     self.reprepare(interstitialUnit: unit, isTesting: isTesting);
                 }else if ad is GADAppOpenAd{
                     self.reprepare(openingUnit: unit, isTesting: isTesting);
+                }else if ad is GADRewardedAd{
+                    self.reprepare(rewardUnit: unit, isTesting: isTesting);
                 }
             }else{
                 print("[\(#function)] ad is loading");
@@ -418,8 +473,17 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
             self.completions[unit] = completion;
             ad.present(from: viewController ?? self.window.rootViewController!);
             self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: Date());
+        }else if let ad = self.adObjects[unit] as? GoogleMobileAds.RewardedAd{
+            print("present reward ad view[\(self.window.rootViewController?.description ?? "")]");
+            self.completions[unit] = completion;
+            ad.present(from: viewController ?? self.window.rootViewController!) { [weak self] in
+                guard let self = self else { return }
+                let reward = ad.adReward
+                print("user reward earned. type[\(reward.type)] amount[\(reward.amount)]");
+            }
+            self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: Date());
         }
-        
+
         //RSDefaults.LastFullADShown = Date();
     }
     
