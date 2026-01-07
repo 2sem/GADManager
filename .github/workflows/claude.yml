@@ -30,6 +30,35 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Cache uv tools
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/uv/tools
+          key: ${{ runner.os }}-uv-tools-serena
+          restore-keys: |
+            ${{ runner.os }}-uv-tools-
+
+      - name: Install Serena
+        run: uv tool install --from git+https://github.com/oraios/serena serena-agent
+
+      - name: Create Serena cache key
+        id: serena-cache-hash
+        run: echo "hash=${{ runner.os }}-serena-cache-${{ hashFiles('**/*.swift', 'Tuist/**/*', 'Projects/**/*.swift') }}" >> $GITHUB_OUTPUT
+
+      - name: Cache Serena data
+        uses: actions/cache@v4
+        id: cache-serena
+        with:
+          path: .serena
+          key: ${{ steps.serena-cache-hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-serena-cache-
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
@@ -46,5 +75,6 @@ jobs:
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr:*)'
+          claude_args: |
+            --allowed-tools "mcp__serena__*,Bash(gh pr:*)"
 
