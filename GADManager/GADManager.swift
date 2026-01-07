@@ -11,29 +11,6 @@ import GoogleMobileAds
 import AdSupport
 import AppTrackingTransparency
 
-/// Private extension to safely access the root view controller in iOS 13+ scene-based apps
-private extension UIApplication {
-    /// Returns the root view controller of the key window in the active scene.
-    /// For multi-scene apps, prioritizes the foreground active scene with fallback logic.
-    /// - Returns: The root view controller, or nil if no valid scene/window is found.
-    var keyRootViewController: UIViewController? {
-        // First, try to get the foreground active scene (ideal for multi-scene apps)
-        if let windowScene = UIApplication.shared.connectedScenes
-            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-            return windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController
-        }
-
-        // Fallback: try any connected scene if no foreground active scene is available
-        guard let windowScene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first else {
-            return nil
-        }
-
-        return windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController
-    }
-}
-
 public protocol GADManagerDelegate : NSObjectProtocol{
     //associatedtype E : RawRepresentable where E.RawValue == String
     func GAD<E>(manager: GADManager<E>, lastPreparedTimeForUnit unit: E) -> Date;
