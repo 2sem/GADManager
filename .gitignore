@@ -99,3 +99,6 @@ iOSInjectionProject/
 
 # MCP
 .serena
+
+# gemini-cli settings
+.gemini/
