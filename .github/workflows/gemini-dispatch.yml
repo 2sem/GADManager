@@ -107,7 +107,7 @@ jobs:
     needs: 'dispatch'
     if: |-
       ${{ needs.dispatch.outputs.command == 'review' }}
-    uses: './.github/workflows/gemini-review.yml'
+    uses: './.github/workflows/gemini-code-review.yml'
     permissions:
       contents: 'read'
       id-token: 'write'
