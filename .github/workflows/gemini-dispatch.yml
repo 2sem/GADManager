@@ -36,14 +36,14 @@ jobs:
 
   dispatch:
     # For PRs: only if not from a fork
-    # For comments: only if user types @gemini-cli and is OWNER/MEMBER/COLLABORATOR
+    # For comments: only if user types @gemini and is OWNER/MEMBER/COLLABORATOR
     if: |-
       (
         github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.fork == false
       ) || (
         github.event.sender.type == 'User' &&
-        startsWith(github.event.comment.body || github.event.review.body, '@gemini-cli') &&
+        startsWith(github.event.comment.body || github.event.review.body, '@gemini') &&
         contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association)
       )
     runs-on: 'ubuntu-latest'
@@ -83,9 +83,9 @@ jobs:
 
             if (eventType === 'pull_request.opened') {
               core.setOutput('command', 'review');
-            } else if (request.startsWith("@gemini-cli /review")) {
+            } else if (request.startsWith("@gemini /review")) {
               core.setOutput('command', 'review');
-              const additionalContext = request.replace(/^@gemini-cli \/review/, '').trim();
+              const additionalContext = request.replace(/^@gemini \/review/, '').trim();
               core.setOutput('additional_context', additionalContext);
             } else {
               core.setOutput('command', 'fallthrough');
