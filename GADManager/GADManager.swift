@@ -452,11 +452,11 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
          }*/
         
         //ignore if alert is being presented
-        /*if let alert = UIApplication.shared.keyWindow?.rootViewController?.presentedViewController as? UIAlertController{
+        /*if let alert = UIApplication.shared.keyRootViewController?.presentedViewController as? UIAlertController{
          alert.dismiss(animated: false, completion: nil);
          }*/
         
-        guard !(UIApplication.shared.keyWindow?.rootViewController?.presentedViewController is UIAlertController) else{
+        guard !(UIApplication.shared.keyRootViewController?.presentedViewController is UIAlertController) else{
             //alert.dismiss(animated: false, completion: nil);
             //self.fullAd = nil;
             completion?(unit, self.adObjects[unit], false);

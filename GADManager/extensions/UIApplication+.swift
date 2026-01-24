@@ -17,7 +17,7 @@
 import UIKit
 
 extension UIApplication{
-    
+
     /**
         os compatible for function to open url
     */
@@ -28,7 +28,7 @@ extension UIApplication{
             self.openURL(url);
         }
     }
-    
+
     /**
         Opens Settings App page for this app
          - parameter completion: block to call after opening Settings App has been completed
@@ -36,5 +36,28 @@ extension UIApplication{
     public func openSettings(_ completion: ((Bool) -> Swift.Void)? = nil){
         let url_settings = URL(string:UIApplication.openSettingsURLString);
         self.openCompatible(url_settings!, options: [:], completionHandler: completion)
+    }
+}
+
+/// Private extension to safely access the root view controller in iOS 13+ scene-based apps
+private extension UIApplication {
+    /// Returns the root view controller of the key window in the active scene.
+    /// For multi-scene apps, prioritizes the foreground active scene with fallback logic.
+    /// - Returns: The root view controller, or nil if no valid scene/window is found.
+    var keyRootViewController: UIViewController? {
+        // First, try to get the foreground active scene (ideal for multi-scene apps)
+        if let windowScene = self.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+            return windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController
+        }
+
+        // Fallback: try any connected scene if no foreground active scene is available
+        guard let windowScene = self.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first else {
+            return nil
+        }
+
+        return windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController
     }
 }
