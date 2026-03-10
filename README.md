@@ -17,7 +17,9 @@ A Swift library for managing Google Mobile Ads with time-based throttling and li
 
 ## Setup
 
-Add your ad unit IDs to `Info.plist` under the key `GADUnitIdentifiers` as a `[String: String]` dictionary:
+### 1. Info.plist
+
+Add your ad unit IDs under the key `GADUnitIdentifiers` as a `[String: String]` dictionary. The keys must exactly match your enum's `rawValue`s.
 
 ```xml
 <key>GADUnitIdentifiers</key>
@@ -31,7 +33,7 @@ Add your ad unit IDs to `Info.plist` under the key `GADUnitIdentifiers` as a `[S
 </dict>
 ```
 
-Define an enum for your ad units:
+### 2. Define your ad units
 
 ```swift
 enum AdUnit: String {
@@ -41,38 +43,54 @@ enum AdUnit: String {
 }
 ```
 
-## Usage
+### 3. Initialize
 
-### Initialization
+Create the manager and assign a delegate. Call this early — typically in `AppDelegate.application(_:didFinishLaunchingWithOptions:)` or your app's root scene setup.
 
 ```swift
+// UIKit
 let adManager = GADManager<AdUnit>(window)
 adManager.delegate = self
+
+// SwiftUI
+let adManager = GADManager<AdUnit>(UIApplication.shared.connectedScenes
+    .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+    .first!)
+adManager.delegate = self
 ```
+
+## Usage
+
+Call `prepare` early to preload the ad. Call `show` when you want to display it.
 
 ### Interstitial
 
 ```swift
-// Prepare (load)
+// In AppDelegate or scene setup
 adManager.prepare(interstitialUnit: .interstitial, interval: 60 * 60)
 
-// Show
+// When ready to show (e.g. after a level completes)
 adManager.show(unit: .interstitial) { unit, _, shown in
-    // shown: true if ad was displayed and dismissed
+    // shown: true if the ad was displayed and dismissed
 }
 ```
 
 ### App Open
 
+`needToWait: true` holds the completion until the ad finishes loading and showing, instead of returning immediately when the ad isn't ready yet.
+
 ```swift
 adManager.prepare(openingUnit: .opening)
 
+// Call on every app foreground
 adManager.show(unit: .opening, needToWait: true) { unit, _, shown in }
 ```
 
 ### Rewarded
 
 ```swift
+import GoogleMobileAds
+
 adManager.prepare(rewardUnit: .rewarded)
 
 adManager.show(unit: .rewarded) { unit, obj, rewarded in
@@ -94,25 +112,30 @@ if let bannerView = adManager.prepare(bannerUnit: .banner) {
 
 ### ATT Permission
 
+Request tracking permission before loading ads to maximise ad revenue.
+
 ```swift
 if #available(iOS 14, *) {
     adManager.requestPermission { status in
-        // load ads after permission resolved
+        adManager.prepare(interstitialUnit: .interstitial)
     }
 }
 ```
 
 ## Delegate
 
+The delegate is responsible for persisting the last-shown time per unit so throttling works correctly across app launches.
+
 ```swift
 extension MyClass: GADManagerDelegate {
-    // Required: persist last shown time per unit
+    // Required: return the last time this unit was shown
     func GAD<E>(manager: GADManager<E>, lastShownTimeForUnit unit: E) -> Date {
-        return UserDefaults.standard.object(forKey: unit.rawValue) as? Date ?? .distantPast
+        return UserDefaults.standard.object(forKey: (unit as! AdUnit).rawValue) as? Date ?? .distantPast
     }
 
+    // Required: persist the shown time
     func GAD<E>(manager: GADManager<E>, updatShownTimeForUnit unit: E, showTime time: Date) {
-        UserDefaults.standard.set(time, forKey: unit.rawValue)
+        UserDefaults.standard.set(time, forKey: (unit as! AdUnit).rawValue)
     }
 
     // Optional
