@@ -2,25 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Build & Lint
+## Build
 
 ```bash
-# Validate podspec
-pod spec lint GADManager.podspec
-
-# Build via SPM
 swift build
-
-# CocoaPods install (in consumer projects)
-pod install
 ```
 
 ## Release Process
 
-1. Bump version in `GADManager.podspec` (`s.version`)
+1. Bump version in `Package.swift` (if applicable) and update version references
 2. Commit: `bump: release a.b.c`
 3. Tag: `git tag a.b.c && git push origin a.b.c`
-4. Push podspec: `pod trunk push GADManager.podspec`
 
 ## Architecture
 
@@ -53,8 +45,13 @@ GADManager is a generic Swift library (`GADManager<E>`) that wraps Google Mobile
 
 ## Distribution
 
-- **CocoaPods**: `pod 'GADManager'` — depends on `Google-Mobile-Ads-SDK` (static framework)
-- **SPM**: `Package.swift` — depends on `swift-package-manager-google-mobile-ads` ≥ 12.6.0
+**SPM only** (CocoaPods removed — CocoaPods is deprecated):
+
+```swift
+.package(url: "https://github.com/2sem/GADManager.git", from: "1.3.8")
+```
+
+Depends on `swift-package-manager-google-mobile-ads` ≥ 12.6.0.
 
 ## CI
 
