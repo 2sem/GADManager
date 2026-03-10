@@ -362,15 +362,17 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     }
 
     func reprepare(adObject: NSObject, isTesting: Bool = false){
-        guard let name = self.name(forAdObject: adObject), let unit = E.init(rawValue: name), let interval = self.intervals[unit] else{
+        guard let name = self.name(forAdObject: adObject), let unit = E.init(rawValue: name) else{
             return;
         }
-        
+
         let isTesting = self.isTesting[unit] ?? isTesting;
 
         if adObject is GoogleMobileAds.InterstitialAd{
+            guard self.intervals[unit] != nil else { return }
             self.reprepare(interstitialUnit: unit, isTesting: isTesting);
         }else if adObject is GoogleMobileAds.AppOpenAd{
+            guard self.intervals[unit] != nil else { return }
             self.reprepare(openingUnit: unit, isTesting: isTesting);
         }else if adObject is GoogleMobileAds.RewardedAd{
             self.reprepare(rewardUnit: unit, isTesting: isTesting);
