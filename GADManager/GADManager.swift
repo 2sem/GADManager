@@ -50,6 +50,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     var isTesting : [E : Bool] = [:];
     var isRewardUnit : [E : Bool] = [:];
     var rewardedUnits : [E : Bool] = [:];
+    var earnedRewards : [E : GoogleMobileAds.AdReward] = [:];
     var lastBeginLoading : [E : Date] = [:];
     var hideTestLabels : [E: Bool] = [:];
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
@@ -486,6 +487,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                 guard let self = self else { return }
                 let reward = ad.adReward
                 print("user reward earned. type[\(reward.type)] amount[\(reward.amount)]");
+                self.earnedRewards[unit] = reward;
                 self.rewardedUnits[unit] = true;
                 self.delegate?.GAD(manager: self, didEarnRewardForUnit: unit, reward: reward);
             }
@@ -617,7 +619,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         self.completions[unit] = nil;
         let rewarded = self.isRewardUnit[unit] == true ? (self.rewardedUnits[unit] ?? false) : true;
         self.rewardedUnits[unit] = nil;
-        completion?(unit, adObj, rewarded);
+        let rewardObject = self.earnedRewards[unit];
+        self.earnedRewards[unit] = nil;
+        completion?(unit, rewardObject ?? adObj, rewarded);
     }
     
     public func ad(_ ad: GoogleMobileAds.FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
