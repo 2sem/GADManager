@@ -19,6 +19,7 @@ public protocol GADManagerDelegate : NSObjectProtocol{
     func GAD<E>(manager: GADManager<E>, updatShownTimeForUnit unit: E, showTime time: Date);
     func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E);
     func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E);
+    func GAD<E>(manager: GADManager<E>, didEarnRewardForUnit unit: E, reward: GoogleMobileAds.AdReward);
 }
 
 public extension GADManagerDelegate{
@@ -28,6 +29,7 @@ public extension GADManagerDelegate{
     func GAD<E>(manager: GADManager<E>, updateLastPreparedTimeForUnit unit: E, preparedTime time: Date){}
     func GAD<E>(manager: GADManager<E>, willPresentADForUnit unit: E){}
     func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E){}
+    func GAD<E>(manager: GADManager<E>, didEarnRewardForUnit unit: E, reward: GoogleMobileAds.AdReward){}
 }
 
 public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullScreenContentDelegate where E.RawValue == String, E: Hashable{
@@ -47,6 +49,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     var isLoading : [E : Bool] = [:];
     var isTesting : [E : Bool] = [:];
     var isRewardUnit : [E : Bool] = [:];
+    var rewardedUnits : [E : Bool] = [:];
     var lastBeginLoading : [E : Date] = [:];
     var hideTestLabels : [E: Bool] = [:];
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
@@ -476,10 +479,13 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         }else if let ad = self.adObjects[unit] as? GoogleMobileAds.RewardedAd{
             print("present reward ad view[\(self.window.rootViewController?.description ?? "")]");
             self.completions[unit] = completion;
+            self.rewardedUnits[unit] = false;
             ad.present(from: viewController ?? self.window.rootViewController!) { [weak self] in
                 guard let self = self else { return }
                 let reward = ad.adReward
                 print("user reward earned. type[\(reward.type)] amount[\(reward.amount)]");
+                self.rewardedUnits[unit] = true;
+                self.delegate?.GAD(manager: self, didEarnRewardForUnit: unit, reward: reward);
             }
             self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: Date());
         }
@@ -607,7 +613,9 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         self.delegate?.GAD(manager: self, didDismissADForUnit: unit);
         let completion = self.completions[unit];
         self.completions[unit] = nil;
-        completion?(unit, adObj, true);
+        let rewarded = self.isRewardUnit[unit] == true ? (self.rewardedUnits[unit] ?? false) : true;
+        self.rewardedUnits[unit] = nil;
+        completion?(unit, adObj, rewarded);
     }
     
     public func ad(_ ad: GoogleMobileAds.FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
