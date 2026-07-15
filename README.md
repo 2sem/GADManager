@@ -12,7 +12,7 @@ A Swift library for managing Google Mobile Ads with time-based throttling and li
 ### Swift Package Manager
 
 ```swift
-.package(url: "https://github.com/2sem/GADManager.git", from: "1.4.0")
+.package(url: "https://github.com/2sem/GADManager.git", from: "1.5.0")
 ```
 
 ## Setup

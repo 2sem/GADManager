@@ -48,7 +48,7 @@ GADManager is a generic Swift library (`GADManager<E>`) that wraps Google Mobile
 **SPM only** (CocoaPods removed — CocoaPods is deprecated):
 
 ```swift
-.package(url: "https://github.com/2sem/GADManager.git", from: "1.3.8")
+.package(url: "https://github.com/2sem/GADManager.git", from: "1.5.0")
 ```
 
 Depends on `swift-package-manager-google-mobile-ads` ≥ 12.6.0.
