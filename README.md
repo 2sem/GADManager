@@ -88,17 +88,21 @@ adManager.show(unit: .opening, needToWait: true) { unit, _, shown in }
 
 ### Rewarded
 
+Use `prepare(rewardUnit:)` to preload a rewarded ad through this library. Then call `show(rewardUnit:)`; `rewarded` is `true` only after the user earns the reward.
+
 ```swift
 import GoogleMobileAds
 
 adManager.prepare(rewardUnit: .rewarded)
 
-adManager.show(unit: .rewarded) { unit, obj, rewarded in
-    if rewarded, let reward = obj as? GoogleMobileAds.AdReward {
+adManager.show(rewardUnit: .rewarded) { unit, reward, rewarded in
+    if rewarded, let reward {
         print("Earned \(reward.amount) \(reward.type)")
     }
 }
 ```
+
+If you need the legacy full-screen API, `show(unit:)` still works and returns the `AdReward` as the callback object when earned.
 
 ### Banner
 
