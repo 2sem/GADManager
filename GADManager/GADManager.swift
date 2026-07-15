@@ -54,6 +54,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     var lastBeginLoading : [E : Date] = [:];
     var hideTestLabels : [E: Bool] = [:];
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
+    var pendingRewardViewControllers : [E : UIViewController] = [:];
+    var pendingRewardForces : [E : Bool] = [:];
     public var canShowFirstTime = true;
     public weak var delegate : GADManagerDelegate?;
     
@@ -318,6 +320,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                         self.isLoading[unit] = false;
                         let completion = self.completions[unit];
                         self.completions[unit] = nil;
+                        self.pendingRewardViewControllers[unit] = nil;
+                        self.pendingRewardForces[unit] = nil;
                         completion?(unit, newAd, false);
                         return;
                     }
@@ -326,6 +330,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                         self.isLoading[unit] = false;
                         let completion = self.completions[unit];
                         self.completions[unit] = nil;
+                        self.pendingRewardViewControllers[unit] = nil;
+                        self.pendingRewardForces[unit] = nil;
                         completion?(unit, nil, false);
                         return;
                     }
@@ -334,16 +340,20 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                     self.adObjects[unit] = newAd;
                     debugPrint("Reward is ready. unit[\(unit)]");
                     self.isLoading[unit] = false;
+                    let viewController = self.pendingRewardViewControllers.removeValue(forKey: unit);
+                    let force = self.pendingRewardForces.removeValue(forKey: unit) ?? false;
                     guard let completion = self.completions[unit] else{
                         return;
                     }
 
-                    self.show(unit: unit, completion: completion);
+                    self.show(unit: unit, force: force, isTesting: self.isTesting[unit] ?? isTesting, viewController: viewController, completion: completion);
                 }
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
                 let completion = self.completions[unit];
                 self.completions[unit] = nil;
+                self.pendingRewardViewControllers[unit] = nil;
+                self.pendingRewardForces[unit] = nil;
                 completion?(unit, nil, false);
             }
             return;
@@ -427,23 +437,29 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     public func show(rewardUnit unit: E, force: Bool = false, needToWait wait: Bool = true, isTesting: Bool = false, viewController: UIViewController? = nil, completion: ((E, GoogleMobileAds.RewardedAd?, Bool) -> Void)? = nil){
         self.isTesting[unit] = isTesting;
         self.isRewardUnit[unit] = true;
-        
+
         let rewardCompletion: ((E, NSObject?, Bool) -> Void)? = { [weak self] unit, object, rewarded in
             let rewardAd = object as? GoogleMobileAds.RewardedAd ?? self?.adObjects[unit] as? GoogleMobileAds.RewardedAd;
             completion?(unit, rewardAd, rewarded);
         }
-        
-        if self.adObjects[unit] == nil && !(self.isLoading[unit] ?? false){
+
+        guard self.adObjects[unit] != nil else{
             if wait{
                 self.completions[unit] = rewardCompletion;
+                self.pendingRewardViewControllers[unit] = viewController;
+                self.pendingRewardForces[unit] = force;
             }
-            self.prepare(rewardUnit: unit, isTesting: isTesting, hideTestLabel: self.hideTestLabels[unit]);
+
+            if !(self.isLoading[unit] ?? false){
+                self.prepare(rewardUnit: unit, isTesting: isTesting, hideTestLabel: self.hideTestLabels[unit]);
+            }
+
             if !wait{
                 completion?(unit, nil, false);
             }
             return;
         }
-        
+
         self.show(unit: unit, force: force, needToWait: wait, isTesting: isTesting, viewController: viewController, completion: rewardCompletion);
     }
 
