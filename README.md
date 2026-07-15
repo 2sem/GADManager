@@ -88,15 +88,15 @@ adManager.show(unit: .opening, needToWait: true) { unit, _, shown in }
 
 ### Rewarded
 
-Use `prepare(rewardUnit:)` to preload a rewarded ad through this library. Then call `show(rewardUnit:)`; `rewarded` is `true` only after the user earns the reward.
+Use `prepare(rewardUnit:)` to preload a rewarded ad through this library. Then call `show(rewardUnit:)`; its completion returns the `RewardedAd`, and `rewarded` is `true` only after the user earns the reward. Read the amount and type from `rewardedAd.adReward`.
 
 ```swift
 import GoogleMobileAds
 
 adManager.prepare(rewardUnit: .rewarded)
 
-adManager.show(rewardUnit: .rewarded) { unit, reward, rewarded in
-    if rewarded, let reward {
+adManager.show(rewardUnit: .rewarded) { unit, rewardedAd, rewarded in
+    if rewarded, let reward = rewardedAd?.adReward {
         print("Earned \(reward.amount) \(reward.type)")
     }
 }

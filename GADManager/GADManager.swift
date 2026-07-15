@@ -424,12 +424,13 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         return value;
     }
     
-    public func show(rewardUnit unit: E, force: Bool = false, needToWait wait: Bool = true, isTesting: Bool = false, viewController: UIViewController? = nil, completion: ((E, GoogleMobileAds.AdReward?, Bool) -> Void)? = nil){
+    public func show(rewardUnit unit: E, force: Bool = false, needToWait wait: Bool = true, isTesting: Bool = false, viewController: UIViewController? = nil, completion: ((E, GoogleMobileAds.RewardedAd?, Bool) -> Void)? = nil){
         self.isTesting[unit] = isTesting;
         self.isRewardUnit[unit] = true;
         
-        let rewardCompletion: ((E, NSObject?, Bool) -> Void)? = { unit, object, rewarded in
-            completion?(unit, object as? GoogleMobileAds.AdReward, rewarded);
+        let rewardCompletion: ((E, NSObject?, Bool) -> Void)? = { [weak self] unit, object, rewarded in
+            let rewardAd = object as? GoogleMobileAds.RewardedAd ?? self?.adObjects[unit] as? GoogleMobileAds.RewardedAd;
+            completion?(unit, rewardAd, rewarded);
         }
         
         if self.adObjects[unit] == nil && !(self.isLoading[unit] ?? false){
