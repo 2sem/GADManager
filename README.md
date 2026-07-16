@@ -126,6 +126,15 @@ if #available(iOS 14, *) {
 }
 ```
 
+With Swift concurrency:
+
+```swift
+if #available(iOS 14, *) {
+    let status = await adManager.requestPermissionAsync()
+    adManager.prepare(interstitialUnit: .interstitial)
+}
+```
+
 ## Delegate
 
 The delegate is responsible for persisting the last-shown time per unit so throttling works correctly across app launches.
