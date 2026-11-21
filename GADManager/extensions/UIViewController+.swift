@@ -110,6 +110,65 @@ extension UIViewController {
         return alert;
     }
     
+    // MARK: Async
+
+    /// Runs `present` and suspends until its completion fires. Resumes immediately when UIKit rejected the presentation (no completion would come).
+    @MainActor
+    private func awaitPresentation<R>(isPresented: () -> Bool, _ present: (@escaping () -> Void) -> R) async -> R {
+        var result: R?
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let box = OneShot(continuation)
+            result = present { box.resume(()) }
+            if !isPresented() { box.resume(()) }
+        }
+        return result!
+    }
+
+    /// Async version of `showAlert(...)`; returns once the alert has been presented.
+    @MainActor @discardableResult
+    public func showAlertAsync(title: String, msg: String, actions : [UIAlertAction], style: UIAlertController.Style, sourceView: UIView? = nil, sourceRect: CGRect? = nil, popoverDelegate: UIPopoverPresentationControllerDelegate? = nil) async -> UIAlertController {
+        var alert: UIAlertController?
+        return await awaitPresentation(isPresented: { self.presentedViewController === alert }) { done in
+            let value = self.showAlert(title: title, msg: msg, actions: actions, style: style, sourceView: sourceView, sourceRect: sourceRect, popoverDelegate: popoverDelegate, completion: done)
+            alert = value
+            return value
+        }
+    }
+
+    /// Async version of `showIndicator(...)`; returns once the indicator alert has been presented.
+    @MainActor @discardableResult
+    public func showIndicatorAsync(title: String?, msg: String = "\n\n\n") async -> UIAlertController {
+        var alert: UIAlertController?
+        return await awaitPresentation(isPresented: { self.presentedViewController === alert }) { done in
+            let value = self.showIndicator(title: title, msg: msg, completion: done)
+            alert = value
+            return value
+        }
+    }
+
+    /// Async version of `showPasscode(...)`; returns once the passcode alert has been presented.
+    @MainActor @discardableResult
+    public func showPasscodeAsync(title: String?, msg: String, buttonTitle: String? = "OK", validationHandler: ((_ password: String) -> Bool)? = nil) async -> UIAlertController {
+        var alert: UIAlertController?
+        return await awaitPresentation(isPresented: { self.presentedViewController === alert }) { done in
+            let value = self.showPasscode(title: title, msg: msg, buttonTitle: buttonTitle, validationHandler: validationHandler, completion: done)
+            alert = value
+            return value
+        }
+    }
+
+    /// Async version of `popOver(inView:...)`; returns once the popover has been presented
+    /// (immediately when it is already presented on `inView`).
+    @MainActor @discardableResult
+    public func popOverAsync(inView: UIViewController, popOverDelegate delegate: UIPopoverPresentationControllerDelegate? = nil, viewToShow view: UIView, rectToShow rect: CGRect, permittedArrowDirections : UIPopoverArrowDirection, animated : Bool, color: UIColor? = nil) async -> UIPopoverPresentationController? {
+        if inView.presentedViewController === self {
+            return self.popOver(inView: inView, popOverDelegate: delegate, viewToShow: view, rectToShow: rect, permittedArrowDirections: permittedArrowDirections, animated: animated, color: color)
+        }
+        return await awaitPresentation(isPresented: { inView.presentedViewController === self }) { done in
+            self.popOver(inView: inView, popOverDelegate: delegate, viewToShow: view, rectToShow: rect, permittedArrowDirections: permittedArrowDirections, animated: animated, color: color, completion: done)
+        }
+    }
+
     /**
          Presents given UIViewController as Popover on this
          - parameter inView: UIViewController to present as Popover

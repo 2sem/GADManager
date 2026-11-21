@@ -56,6 +56,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
     var completions : [E : (E, NSObject?, Bool) -> Void] = [:];
     var pendingRewardViewControllers : [E : UIViewController] = [:];
     var pendingRewardForces : [E : Bool] = [:];
+    /// One-shot observers waiting for the next load result of a unit (used by the `prepare...Async` APIs).
+    var loadWaiters : [E : [(Bool) -> Void]] = [:];
     public var canShowFirstTime = true;
     public weak var delegate : GADManagerDelegate?;
     
@@ -96,6 +98,25 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         /*if GADManager._shared == nil{
          GADManager._shared = self;
          }*/
+    }
+    
+    /// Stores `completion` as the pending completion of `unit`. A different completion that is still pending
+    /// is superseded: it is removed and called with `isCompleted == false` so no caller is left waiting forever.
+    func replaceCompletion(_ completion: ((E, NSObject?, Bool) -> Void)?, for unit: E){
+        let superseded = self.completions.removeValue(forKey: unit);
+        if let completion = completion{
+            self.completions[unit] = completion;
+        }
+        superseded?(unit, self.adObjects[unit], false);
+    }
+    
+    /// Calls and removes every load waiter registered for `unit`.
+    func resolveLoadWaiters(_ unit: E, success: Bool){
+        guard let waiters = self.loadWaiters.removeValue(forKey: unit) else{
+            return;
+        }
+        
+        waiters.forEach{ $0(success) };
     }
     
     func name(forAdObject adObject: NSObject) -> String?{
@@ -212,24 +233,35 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                 self.isLoading[unit] = true;
                 
                 GoogleMobileAds.InterstitialAd.load(with: unitId, request: req) { [weak self](newAd, error) in
-                    self?.isLoading[unit] = false;
+                    guard let self = self else{
+                        return;
+                    }
+                    
+                    self.isLoading[unit] = false;
                     if let error = error{
     //                        guard let _ = GADErrorCode.init(rawValue: error.code) else {
     //                            return;
     //                        }
                         print("GAD Interstitial is error. unit[\(unit)] id[\(unitId)] error[\(error)]");
-                        let completion = self?.completions[unit];
-                        self?.completions[unit] = nil;
+                        let completion = self.completions[unit];
+                        self.completions[unit] = nil;
                         completion?(unit, newAd, false);
+                        self.resolveLoadWaiters(unit, success: false);
                         return;
                     }
                     
                     newAd?.fullScreenContentDelegate = self;
-                    self?.adObjects[unit] = newAd;
+                    self.adObjects[unit] = newAd;
                     debugPrint("GAD Interstitial is ready. unit[\(unit)] id[\(unitId)] ad[\(newAd?.debugDescription ?? "")]");
+                    self.resolveLoadWaiters(unit, success: newAd != nil);
+                    
+                    if let completion = self.completions.removeValue(forKey: unit){
+                        self.show(unit: unit, isTesting: self.isTesting[unit] ?? isTesting, completion: completion);
+                    }
                 }
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
+                self.resolveLoadWaiters(unit, success: false);
             }
         }
         
@@ -287,22 +319,26 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                     if let error = error{
                         print("GAD Opening is error. unit[\(unit)] id[\(unitId)] error[\(error)]");
                         self.isLoading[unit] = false;
+                        let completion = self.completions[unit];
+                        self.completions[unit] = nil;
+                        completion?(unit, nil, false);
+                        self.resolveLoadWaiters(unit, success: false);
                         return;
                     }
                     
                     debugPrint("Opening is ready. unit[\(unit)]");
                     self.isLoading[unit] = false;
                     self.delegate?.GAD(manager: self, updateLastPreparedTimeForUnit: unit, preparedTime: Date());
-                    guard let completion = self.completions[unit] else{
+                    self.resolveLoadWaiters(unit, success: newAd != nil);
+                    guard let completion = self.completions.removeValue(forKey: unit) else{
                         return;
                     }
                     
-            //        self.completions[unit] = nil;
-            //        completion?(unit, ad);
                     self.show(unit: unit, completion: completion);
                 }
             }else{
                 assertionFailure("create dictionary 'GADUnitIdentifiers' and insert new unit id into it.");
+                self.resolveLoadWaiters(unit, success: false);
             }
             return;
         }
@@ -334,6 +370,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                         self.pendingRewardViewControllers[unit] = nil;
                         self.pendingRewardForces[unit] = nil;
                         completion?(unit, newAd, false);
+                        self.resolveLoadWaiters(unit, success: false);
                         return;
                     }
 
@@ -344,6 +381,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                         self.pendingRewardViewControllers[unit] = nil;
                         self.pendingRewardForces[unit] = nil;
                         completion?(unit, nil, false);
+                        self.resolveLoadWaiters(unit, success: false);
                         return;
                     }
 
@@ -353,7 +391,8 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                     self.isLoading[unit] = false;
                     let viewController = self.pendingRewardViewControllers.removeValue(forKey: unit);
                     let force = self.pendingRewardForces.removeValue(forKey: unit) ?? false;
-                    guard let completion = self.completions[unit] else{
+                    self.resolveLoadWaiters(unit, success: true);
+                    guard let completion = self.completions.removeValue(forKey: unit) else{
                         return;
                     }
 
@@ -366,6 +405,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                 self.pendingRewardViewControllers[unit] = nil;
                 self.pendingRewardForces[unit] = nil;
                 completion?(unit, nil, false);
+                self.resolveLoadWaiters(unit, success: false);
             }
             return;
         }
@@ -456,7 +496,7 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
 
         guard self.adObjects[unit] != nil else{
             if wait{
-                self.completions[unit] = rewardCompletion;
+                self.replaceCompletion(rewardCompletion, for: unit);
                 self.pendingRewardViewControllers[unit] = viewController;
                 self.pendingRewardForces[unit] = force;
             }
@@ -478,17 +518,21 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         self.isTesting[unit] = isTesting;
         
         guard self.canShow(unit) || force else {
-            self.completions[unit] = nil;
+            let pending = self.completions.removeValue(forKey: unit);
+            pending?(unit, self.adObjects[unit], false);
             completion?(unit, self.adObjects[unit], false);
             return;
         }
         
         guard self.isPrepared(unit) else{
-            if wait{
-                self.completions[unit] = completion;
-            }
-            
             let ad = self.adObjects[unit];
+            
+            //nothing is loading and nothing can be reloaded, so waiting would never complete
+            let wait = wait && !(ad == nil && !(self.isLoading[unit] ?? false));
+            
+            if wait{
+                self.replaceCompletion(completion, for: unit);
+            }
             
             if !(self.isLoading[unit] ?? false){
                 print("[\(#function)] ad is not loading. unit[\(unit)] ad[\(ad?.debugDescription ?? "")]");
@@ -537,17 +581,17 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
         
         if let ad = self.adObjects[unit] as? GoogleMobileAds.InterstitialAd{
             print("present interstital ad view[\(self.window.rootViewController?.description ?? "")]");
-            self.completions[unit] = completion;
+            self.replaceCompletion(completion, for: unit);
             ad.present(from: viewController ?? self.window.rootViewController!);
             self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: Date());
         }else if let ad = self.adObjects[unit] as? GoogleMobileAds.AppOpenAd{
             print("present opening ad view[\(self.window.rootViewController?.description ?? "")]");
-            self.completions[unit] = completion;
+            self.replaceCompletion(completion, for: unit);
             ad.present(from: viewController ?? self.window.rootViewController!);
             self.delegate?.GAD(manager: self, updatShownTimeForUnit: unit, showTime: Date());
         }else if let ad = self.adObjects[unit] as? GoogleMobileAds.RewardedAd{
             print("present reward ad view[\(self.window.rootViewController?.description ?? "")]");
-            self.completions[unit] = completion;
+            self.replaceCompletion(completion, for: unit);
             self.rewardedUnits[unit] = false;
             ad.present(from: viewController ?? self.window.rootViewController!) { [weak self] in
                 guard let self = self else { return }
