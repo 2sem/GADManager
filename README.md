@@ -135,6 +135,39 @@ if #available(iOS 14, *) {
 }
 ```
 
+### Async/Await
+
+Every completion-based API has an `...Async` counterpart (all `@MainActor`, results are discardable).
+
+| Callback API | Async API | Returns |
+|---|---|---|
+| `show(unit:...completion:)` | `showAsync(unit:force:needToWait:isTesting:viewController:)` | `ShowResult` (`unit`, `ad`, `isCompleted`) |
+| `show(rewardUnit:...completion:)` | `showAsync(rewardUnit:force:needToWait:isTesting:viewController:)` | `RewardResult` (`unit`, `ad`, `isRewarded`) |
+| `prepare(interstitialUnit:...)` | `prepareAsync(interstitialUnit:isTesting:interval:hideTestLabel:)` | `Bool` (loaded) |
+| `prepare(openingUnit:...)` | `prepareAsync(openingUnit:isTesting:orientation:interval:hideTestLabel:)` | `Bool` (loaded) |
+| `prepare(rewardUnit:...)` | `prepareAsync(rewardUnit:isTesting:hideTestLabel:)` | `Bool` (loaded) |
+| `createNativeLoader(forAd:...)` | `loadNativeAd(forAd:withOptions:isTesting:rootViewController:)` | `NativeAd` (throws) |
+| `UIApplication.openSettings(_:)` | `openSettingsAsync()` | `Bool` |
+| `UIViewController.showAlert/showIndicator/showPasscode/popOver` | `showAlertAsync` / `showIndicatorAsync` / `showPasscodeAsync` / `popOverAsync` | presented controller |
+
+```swift
+await adManager.prepareAsync(interstitialUnit: .interstitial)
+
+let result = await adManager.showAsync(unit: .interstitial, needToWait: true)
+if result.isCompleted { /* ad was shown and dismissed */ }
+
+let reward = await adManager.showAsync(rewardUnit: .reward)
+if reward.isRewarded { grantReward() }
+
+do {
+    let nativeAd = try await adManager.loadNativeAd(forAd: .native)
+} catch GADManagerError.missingUnitIdentifier {
+    // GADUnitIdentifiers has no entry for this unit
+}
+```
+
+If a newer `show` supersedes a pending `needToWait` show of the same unit, the older one resolves with `isCompleted == false`.
+
 ## Delegate
 
 The delegate is responsible for persisting the last-shown time per unit so throttling works correctly across app launches.

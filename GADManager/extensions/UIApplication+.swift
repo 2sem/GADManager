@@ -37,6 +37,16 @@ extension UIApplication{
         let url_settings = URL(string:UIApplication.openSettingsURLString);
         self.openCompatible(url_settings!, options: [:], completionHandler: completion)
     }
+
+    /// Async version of `openSettings(_:)`.
+    /// - Returns: `true` when the Settings app was opened.
+    @MainActor @discardableResult
+    public func openSettingsAsync() async -> Bool {
+        await withCheckedContinuation { continuation in
+            let box = OneShot(continuation)
+            self.openSettings { box.resume($0) }
+        }
+    }
 }
 
 /// Internal extension to safely access the root view controller in iOS 13+ scene-based apps
