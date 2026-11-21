@@ -137,13 +137,24 @@ public class GADManager<E : RawRepresentable> : NSObject, GoogleMobileAds.FullSc
                     print("[\(#function)] Restricted")
                     //show alert
                     //showAlert(title: String, msg: String, actions : [UIAlertAction], style: UIAlertControllerStyle, sourceView: UIView? = nil, sourceRect: CGRect? = nil, popoverDelegate: UIPopoverPresentationControllerDelegate? = nil, completion: (() -> Void)? = nil)
-                    return;
+                    break;
                 @unknown default:
                     print("[\(#function)] Unknown")
                     break;
             }
             
             completion?(status);
+        }
+    }
+
+    /// Requests App Tracking Transparency permission asynchronously and returns the resulting authorization status.
+    /// - Returns: The authorization status reported by `ATTrackingManager`.
+    @available(iOS 14, *)
+    public func requestPermissionAsync(viewControllerForAlert viewController: UIViewController? = nil, title: String? = nil, msg: String? = nil, cancel: String? = nil, settings: String? = nil) async -> ATTrackingManager.AuthorizationStatus {
+        await withCheckedContinuation { continuation in
+            requestPermission(viewControllerForAlert: viewController, title: title, msg: msg, cancel: cancel, settings: settings) { status in
+                continuation.resume(returning: status)
+            }
         }
     }
     #endif
