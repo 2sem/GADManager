@@ -55,5 +55,4 @@ Depends on `swift-package-manager-google-mobile-ads` ≥ 13.13.0 (iOS 13.0+).
 
 ## CI
 
-- **Gemini code review** (`gemini-dispatch.yml`): triggers on PR open or `@gemini` comment from OWNER/MEMBER/COLLABORATOR
 - **Claude** (`claude.yml`): separate workflow for Claude-based automation
