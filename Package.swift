@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "GADManager",
+    platforms: [.iOS(.v13)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -12,7 +13,7 @@ let package = Package(
             targets: ["GADManager"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads", from: "12.6.0")
+        .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads", from: "13.13.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.

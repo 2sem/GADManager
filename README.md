@@ -4,7 +4,7 @@ A Swift library for managing Google Mobile Ads with time-based throttling and li
 
 ## Requirements
 
-- iOS 12.0+
+- iOS 13.0+
 - Swift 5.10+
 
 ## Installation

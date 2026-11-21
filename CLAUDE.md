@@ -51,7 +51,7 @@ GADManager is a generic Swift library (`GADManager<E>`) that wraps Google Mobile
 .package(url: "https://github.com/2sem/GADManager.git", from: "1.5.0")
 ```
 
-Depends on `swift-package-manager-google-mobile-ads` ≥ 12.6.0.
+Depends on `swift-package-manager-google-mobile-ads` ≥ 13.13.0 (iOS 13.0+).
 
 ## CI
 
