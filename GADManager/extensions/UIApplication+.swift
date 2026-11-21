@@ -39,8 +39,8 @@ extension UIApplication{
     }
 }
 
-/// Private extension to safely access the root view controller in iOS 13+ scene-based apps
-private extension UIApplication {
+/// Internal extension to safely access the root view controller in iOS 13+ scene-based apps
+extension UIApplication {
     /// Returns the root view controller of the key window in the active scene.
     /// For multi-scene apps, prioritizes the foreground active scene with fallback logic.
     /// - Returns: The root view controller, or nil if no valid scene/window is found.
